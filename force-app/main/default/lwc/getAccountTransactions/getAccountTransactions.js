@@ -12,6 +12,8 @@ export default class GetAccountTransactions extends LightningElement {
     selectedType = '';
     selectedStatuses = [];
     isLoading = false;
+    homePage = true;
+    transactionsPage = false;
 
     // Type picklist options
     typeOptions = [
@@ -93,15 +95,20 @@ export default class GetAccountTransactions extends LightningElement {
     handleNext() {
         if (!this.fromDate || !this.toDate || !this.selectedType) {
             this.showToast("Error", "Please fill all required fields", "error");
+            return;
         }
         // Validate date range
         if (new Date(this.fromDate) > new Date(this.toDate)) {
             this.showToast("Error", "From Date should be less than or equal to To Date", "error");
+            return;
         }
+
+        this.homePage = false;
+        this.transactionsPage = true;
     }
 
 
-    handleClose() {
+    handleDone() {
         // Close the quick action modal
         this.dispatchEvent(new CloseActionScreenEvent());
     }

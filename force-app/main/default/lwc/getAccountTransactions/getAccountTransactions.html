@@ -8,63 +8,79 @@
         </header>
 
         <!-- Body -->
-        <div class=" slds-p-around_large">
-            <!-- Balance Outstanding -->
-            <div class="slds-text-align_center slds-m-bottom_large">
-                <h3 class="slds-form-element__label">
-                    Balance Outstanding : {balanceOutstanding}
-                </h3>
-            </div>
-
-            <!-- Form Fields -->
-            <div class="slds-form_compound">
-                <div class="slds-grid slds-gutters slds-wrap">
-                    <!-- From Date -->
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-input type="date" label="From Date" value={fromDate} onchange={handleFromDateChange}
-                            required>
-                        </lightning-input>
-                    </div>
-
-                    <!-- To Date -->
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-input type="date" label="To date" value={toDate} onchange={handleToDateChange}
-                            required>
-                        </lightning-input>
-                    </div>
+        <template lwc:if={homePage}>
+            <div class=" slds-p-around_large">
+                <!-- Balance Outstanding -->
+                <div class="slds-text-align_center slds-m-bottom_large">
+                    <h3 class="slds-form-element__label">
+                        Balance Outstanding : {balanceOutstanding}
+                    </h3>
                 </div>
 
-                <div class="slds-grid slds-gutters slds-wrap slds-m-top_medium">
-                    <!-- Type -->
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-combobox label="Type" value={selectedType} placeholder="--None--"
-                            options={typeOptions} onchange={handleTypeChange} required>
-                        </lightning-combobox>
+                <!-- Form Fields -->
+                <div class="slds-form_compound">
+                    <div class="slds-grid slds-gutters slds-wrap">
+                        <!-- From Date -->
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input type="date" label="From Date" value={fromDate}
+                                onchange={handleFromDateChange} required>
+                            </lightning-input>
+                        </div>
+
+                        <!-- To Date -->
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input type="date" label="To date" value={toDate} onchange={handleToDateChange}
+                                required>
+                            </lightning-input>
+                        </div>
                     </div>
 
-                    <!-- Transaction Status -->
-                    <div class="slds-col slds-size_1-of-2">
-                        <div class="slds-form-element">
-                            <label class="slds-form-element__label">
-                                Transaction Status
-                            </label>
-                            <div class="slds-form-element__control">
-                                <lightning-checkbox-group options={statusOptions} value={selectedStatuses}
-                                    onchange={handleStatusChange}>
-                                </lightning-checkbox-group>
+                    <div class="slds-grid slds-gutters slds-wrap slds-m-top_medium">
+                        <!-- Type -->
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-combobox label="Type" value={selectedType} placeholder="--None--"
+                                options={typeOptions} onchange={handleTypeChange} required>
+                            </lightning-combobox>
+                        </div>
+
+                        <!-- Transaction Status -->
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label">
+                                    Transaction Status
+                                </label>
+                                <div class="slds-form-element__control">
+                                    <lightning-checkbox-group options={statusOptions} value={selectedStatuses}
+                                        onchange={handleStatusChange}>
+                                    </lightning-checkbox-group>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </template>
+        <template lwc:if={transactionsPage}>
+            <div class=" slds-p-around_medium">
+                This is Transaction Page
+            </div>
+        </template>
 
         <!-- Footer -->
-        <footer class="slds-text-align_right slds-p-around_small slds-border_top">
-            <lightning-button label="Next" variant="brand" onclick={handleNext} disabled={isLoading}
-                class="slds-m-left_x-small">
-            </lightning-button>
-        </footer>
+        <template lwc:if={homePage}>
+            <footer class="slds-text-align_right slds-p-around_small slds-border_top">
+                <lightning-button label="Next" variant="brand" onclick={handleNext} disabled={isLoading}
+                    class="slds-m-left_x-small">
+                </lightning-button>
+            </footer>
+        </template>
+        <template lwc:if={transactionsPage}>
+            <footer class="slds-text-align_right slds-p-around_small slds-border_top">
+                <lightning-button label="Done" variant="brand" onclick={handleDone} disabled={isLoading}
+                    class="slds-m-left_x-small">
+                </lightning-button>
+            </footer>
+        </template>
     </div>
 
     <!-- Loader -->

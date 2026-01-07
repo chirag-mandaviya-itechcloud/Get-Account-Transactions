@@ -1,20 +1,17 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
+import { CurrentPageReference } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-// import getBalanceOutstanding from '@salesforce/apex/TransactionController.getBalanceOutstanding';
-// import getTransactions from '@salesforce/apex/TransactionController.getTransactions';
 import getAccountDetails from '@salesforce/apex/GetAccountTransactionsController.getAccountDetails';
 
 export default class GetAccountTransactions extends LightningElement {
-    @api recordId; // Account Record ID
-
+    recordId; // Account Record ID
     balanceOutstanding = '0';
     fromDate = '2024-01-01';
     toDate = '';
     selectedType = '';
     selectedStatuses = [];
     isLoading = false;
-    errorMessage = '';
 
     // Type picklist options
     typeOptions = [
@@ -38,16 +35,23 @@ export default class GetAccountTransactions extends LightningElement {
         // Set today's date as To Date
         const today = new Date();
         this.toDate = today.toISOString().split('T')[0];
-        console.log("record ID: ", this.recordId);
+    }
 
-        // Fetch balance outstanding
-        if (this.recordId) {
-            this.fetchAccountDetails();
+    @wire(CurrentPageReference)
+    getPageRef(pageRef) {
+        if (pageRef) {
+            // Quick Action recordId comes from state.recordId
+            this.recordId = pageRef.state?.recordId;
+            this.baseUrl = window.location.origin;
+
+            if (this.recordId) {
+                console.log('Record ID from PageReference:', this.recordId);
+                this.fetchAccountDetails();
+            }
         }
     }
 
     fetchAccountDetails() {
-        console.log("record ID: ", this.recordId);
         this.isLoading = true;
         getAccountDetails({ recordId: this.recordId })
             .then(result => {
@@ -63,100 +67,52 @@ export default class GetAccountTransactions extends LightningElement {
     }
 
     handleFromDateChange(event) {
+
         this.fromDate = event.target.value;
-        this.errorMessage = '';
+        console.log('fromDate:', this.fromDate);
     }
 
     handleToDateChange(event) {
+
         this.toDate = event.target.value;
-        this.errorMessage = '';
+        console.log('toDate:', this.toDate);
     }
 
     handleTypeChange(event) {
+
         this.selectedType = event.detail.value;
-        this.errorMessage = '';
+        console.log('selectedType:', this.selectedType);
     }
 
     handleStatusChange(event) {
+
         this.selectedStatuses = event.detail.value;
-        this.errorMessage = '';
+        console.log('selectedStatuses:', this.selectedStatuses);
     }
 
     handleNext() {
-        // Validate required fields
-        if (!this.fromDate) {
-            this.errorMessage = 'Please select From Date';
-            return;
+        if (!this.fromDate || !this.toDate || !this.selectedType) {
+            this.showToast("Error", "Please fill all required fields", "error");
         }
-
-        if (!this.toDate) {
-            this.errorMessage = 'Please select To Date';
-            return;
-        }
-
-        if (!this.selectedType) {
-            this.errorMessage = 'Please select a Type';
-            return;
-        }
-
         // Validate date range
         if (new Date(this.fromDate) > new Date(this.toDate)) {
-            this.errorMessage = 'From Date cannot be greater than To Date';
-            return;
+            this.showToast("Error", "From Date should be less than or equal to To Date", "error");
         }
-
-        // Call Apex method to get transactions
-        this.fetchTransactions();
     }
 
-    // fetchTransactions() {
-    //     this.isLoading = true;
-    //     this.errorMessage = '';
-
-    //     getTransactions({
-    //         accountId: this.recordId,
-    //         fromDate: this.fromDate,
-    //         toDate: this.toDate,
-    //         transactionType: this.selectedType,
-    //         statuses: this.selectedStatuses
-    //     })
-    //         .then(result => {
-    //             this.isLoading = false;
-
-    //             // Show success message
-    //             this.dispatchEvent(
-    //                 new ShowToastEvent({
-    //                     title: 'Success',
-    //                     message: `Found ${result.length} transaction(s)`,
-    //                     variant: 'success'
-    //                 })
-    //             );
-
-    //             // Process the result or navigate to next step
-    //             // You can dispatch a custom event here to parent component
-    //             this.dispatchEvent(new CustomEvent('transactionsfetched', {
-    //                 detail: result
-    //             }));
-
-    //             // Close the modal
-    //             this.handleClose();
-    //         })
-    //         .catch(error => {
-    //             this.isLoading = false;
-    //             this.errorMessage = error.body ? error.body.message : 'An error occurred while fetching transactions';
-
-    //             this.dispatchEvent(
-    //                 new ShowToastEvent({
-    //                     title: 'Error',
-    //                     message: this.errorMessage,
-    //                     variant: 'error'
-    //                 })
-    //             );
-    //         });
-    // }
 
     handleClose() {
         // Close the quick action modal
         this.dispatchEvent(new CloseActionScreenEvent());
+    }
+
+    showToast(mTitle, mMessage, mVariant) {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: mTitle,
+                message: mMessage,
+                variant: mVariant
+            }),
+        )
     }
 }

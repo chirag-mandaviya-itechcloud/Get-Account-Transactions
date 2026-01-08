@@ -3,6 +3,8 @@ import { CloseActionScreenEvent } from 'lightning/actions';
 import { CurrentPageReference } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getAccountDetails from '@salesforce/apex/GetAccountTransactionsController.getAccountDetails';
+import getAllTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getAllTransactionMasterObject';
+import getAllTransactionMasterObjectData from '@salesforce/apex/GetAccountTransactionsController.getAllTransactionMasterObjectData';
 
 export default class GetAccountTransactions extends LightningElement {
     recordId; // Account Record ID
@@ -14,6 +16,8 @@ export default class GetAccountTransactions extends LightningElement {
     isLoading = false;
     homePage = true;
     transactionsPage = false;
+    transactionObjectNames = [];
+    transactionsData = [];
 
     // Type picklist options
     typeOptions = [
@@ -57,7 +61,6 @@ export default class GetAccountTransactions extends LightningElement {
         this.isLoading = true;
         getAccountDetails({ recordId: this.recordId })
             .then(result => {
-                // this.balanceOutstanding = result ? result.toLocaleString() : '0';
                 console.log("result: ", result);
                 this.isLoading = false;
             })
@@ -92,7 +95,7 @@ export default class GetAccountTransactions extends LightningElement {
         console.log('selectedStatuses:', this.selectedStatuses);
     }
 
-    handleNext() {
+    async handleNext() {
         if (!this.fromDate || !this.toDate || !this.selectedType) {
             this.showToast("Error", "Please fill all required fields", "error");
             return;
@@ -105,6 +108,83 @@ export default class GetAccountTransactions extends LightningElement {
 
         this.homePage = false;
         this.transactionsPage = true;
+        await this.getTransactionObjects();
+        await this.getTransactionObjectsData();
+    }
+
+    async getTransactionObjects() {
+        this.isLoading = true;
+        try {
+            if (this.selectedType == 'All') {
+                const result = await getAllTransactionMasterObject()
+                console.log("All Transactions objects : ", result);
+                this.transactionObjectNames = result;
+            } else if (this.selectedType == 'Outstanding') {
+
+            } else if (this.selectedType == 'Overdue') {
+
+            } else if (this.selectedType == 'Paid Invoice') {
+
+            } else if (this.selectedType == 'Credit Notes') {
+
+            } else if (this.selectedType == 'Receipt & Payment') {
+
+            } else if (this.selectedType == 'Journals') {
+
+            }
+        } catch (error) {
+            console.error("Error fetching all transactions objects : ", error);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async getTransactionObjectsData() {
+        this.isLoading = true;
+        try {
+            if (this.selectedType == 'All') {
+                // Use map to create an array of promises
+                const promises = this.transactionObjectNames.map(objName =>
+                    getAllTransactionMasterObjectData({
+                        objectName: objName,
+                        accountId: this.recordId,
+                        fromDate: this.fromDate,
+                        toDate: this.toDate,
+                        statuses: this.selectedStatuses
+                    })
+                );
+
+                // Wait for all promises to resolve
+                const results = await Promise.all(promises);
+
+                // Map results to wrapper data
+                this.transactionsData = results.map(result => ({
+                    objectName: result.objectName,
+                    displayLabel: result.displayLabel,
+                    records: result.records,
+                    recordCount: result.recordCount
+                }));
+
+                console.log("All Data: ", this.transactionsData);
+
+            } else if (this.selectedType == 'Outstanding') {
+
+            } else if (this.selectedType == 'Overdue') {
+
+            } else if (this.selectedType == 'Paid Invoice') {
+
+            } else if (this.selectedType == 'Credit Notes') {
+
+            } else if (this.selectedType == 'Receipt & Payment') {
+
+            } else if (this.selectedType == 'Journals') {
+
+            }
+        } catch (error) {
+            console.error("Error fetching all transactions objects data : ", error);
+        } finally {
+            this.isLoading = false;
+        }
     }
 
 

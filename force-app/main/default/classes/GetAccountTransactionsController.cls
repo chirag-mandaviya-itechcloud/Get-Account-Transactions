@@ -16,10 +16,162 @@
 
 public class GetAccountTransactionsController {
 
+	public class TransactionDataWrapper {
+    @AuraEnabled public String objectName { get; set; }
+    @AuraEnabled public String displayLabel { get; set; }
+    @AuraEnabled public List<SObject> records { get; set; }
+    @AuraEnabled public Integer recordCount { get; set; }
+}
+
 	@AuraEnabled
 	public static Account getAccountDetails(String recordId) {
-		Account acc = [SELECT Id, Account_Balance__c FROM Account WHERE Id = :recordId LIMIT 1];
-		return acc;
+		try {
+			Account acc = [SELECT Id, Account_Balance__c FROM Account WHERE Id = :recordId LIMIT 1];
+			return acc;
+		} catch (Exception e) {
+			throw new AuraHandledException(e.getMessage());
+		}
 	}
+
+	@AuraEnabled
+	public static List<String> getAllTransactionMasterObject(){
+		try {
+			List<Transaction_Type__c> transactionTypes = [SELECT Id, Transaction_Master_Object__c FROM Transaction_Type__c];
+
+			Set<String> transactionObjectNames = new Set<String>();
+
+			for (Transaction_Type__c typ : transactionTypes) {
+				if (typ.Transaction_Master_Object__c != null){
+					transactionObjectNames.add(typ.Transaction_Master_Object__c);
+				}
+			}
+			return new List<String>(transactionObjectNames);
+		} catch (Exception e) {
+			throw new AuraHandledException(e.getMessage());
+		}
+	}
+
+	private static String buildDynamicQuery(String fieldsToQuery, String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses) {
+		String nameSpace = getOrgNameSpace();
+		String whereClause = '';
+		Boolean hasWhereClause = false;
+
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'To_Account__c')) {
+			whereClause += ' WHERE To_Account__c = \'' + accountId + '\'';
+			hasWhereClause = true;
+		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Account__c')) {
+			whereClause += ' WHERE Account__c = \'' + accountId + '\'';
+			hasWhereClause = true;
+		}
+
+		if (fromDate != null && toDate != null) {
+			if (doesFieldExist(namespace+objectName, nameSpace+'Invoice_Date__c')) {
+				fieldsToQuery += ', ' + 'Invoice_Date__c';
+				if (hasWhereClause) {
+					whereClause += ' AND Invoice_Date__c >= '+ String.valueOf(fromDate) + ' AND Invoice_Date__c <= ' + String.valueOf(toDate);
+				} else {
+					whereClause += ' WHERE Invoice_Date__c >= '+ String.valueOf(fromDate) + ' AND Invoice_Date__c <= ' + String.valueOf(toDate);
+					hasWhereClause = true;
+				}
+			} else if (doesFieldExist(namespace+objectName, nameSpace+'Pay_Date__c')) {
+				fieldsToQuery += ', ' + 'Pay_Date__c';
+				if (hasWhereClause) {
+					whereClause += ' AND Pay_Date__c >= '+ String.valueOf(fromDate) + ' AND Pay_Date__c <= ' + String.valueOf(toDate);
+				} else {
+					whereClause += ' WHERE Pay_Date__c >= '+ String.valueOf(fromDate) + ' AND Pay_Date__c <= ' + String.valueOf(toDate);
+					hasWhereClause = true;
+				}
+
+			}
+		}
+
+		if (statuses != null && !statuses.isEmpty()) {
+			if (doesFieldExist(namespace+objectName, nameSpace+'Posting_Status__c')) {
+				String statusFilter = ' Posting_Status__c IN (';
+				for (Integer i = 0; i < statuses.size(); i++) {
+					statusFilter += '\'' + statuses[i] + '\'';
+					if (i < statuses.size() - 1) {
+						statusFilter += ',';
+					}
+				}
+				statusFilter += ')';
+				if (hasWhereClause) {
+					whereClause += ' AND ' + statusFilter;
+				} else {
+					whereClause += ' WHERE ' + statusFilter;
+					hasWhereClause = true;
+				}
+			}
+		}
+
+		String query = 'SELECT ' + fieldsToQuery + ' FROM ' + objectName + whereClause;
+		return query;
+	}
+
+	@AuraEnabled
+	public static TransactionDataWrapper getAllTransactionMasterObjectData(String objectName,String accountId, Date fromDate, Date toDate, List<String> statuses){
+		try {
+			String nameSpace = getOrgNameSpace();
+        	String fullObjectName = nameSpace + objectName;
+
+			if (!objectExists(fullObjectName)) {
+				System.debug('Object does not exist: ' + fullObjectName);
+				return new TransactionDataWrapper();
+			}
+
+			String fieldsToQuery = 'Id, Name';
+			String query = buildDynamicQuery(fieldsToQuery, objectName, accountId, fromDate, toDate, statuses);
+
+			System.debug('Query: '+ query);
+
+			List<SObject> records = Database.query(query);
+
+			// Create wrapper
+			TransactionDataWrapper wrapper = new TransactionDataWrapper();
+			wrapper.objectName = objectName;
+			wrapper.displayLabel = getObjectLabel(fullObjectName);
+			wrapper.records = records;
+			wrapper.recordCount = records.size();
+
+			return wrapper;
+
+		} catch (Exception e) {
+			throw new AuraHandledException(e.getMessage());
+		}
+	}
+
+	private static Boolean objectExists(String objectApiName) {
+		Map<String, Schema.SObjectType> objects = Schema.getGlobalDescribe();
+		return objects.containsKey(objectApiName);
+	}
+
+	private static Boolean doesFieldExist(String objectApiName, String fieldApiName) {
+		Map<String, Schema.SObjectType> objects = Schema.getGlobalDescribe();
+
+		if (!objects.containsKey(objectApiName)) {
+			return false; // Object doesn't exist
+		}
+
+		Schema.DescribeSObjectResult objDescribe =
+			objects.get(objectApiName).getDescribe();
+
+		return objDescribe.fields.getMap().containsKey(fieldApiName);
+	}
+
+	private static String getOrgNameSpace(){
+		return UtilsController.getNameSpace();
+	}
+
+	private static String getObjectLabel(String objectApiName) {
+		try {
+			Schema.DescribeSObjectResult objDescribe = Schema.getGlobalDescribe()
+				.get(objectApiName)
+				.getDescribe();
+			return objDescribe.getLabel();
+		} catch (Exception e) {
+			return objectApiName; // Fallback to API name
+		}
+	}
+
 
 }

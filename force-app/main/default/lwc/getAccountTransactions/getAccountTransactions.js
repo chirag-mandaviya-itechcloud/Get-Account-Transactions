@@ -216,6 +216,7 @@ export default class GetAccountTransactions extends LightningElement {
                 }
 
                 if (fieldName.toLowerCase().includes('date')) {
+                    column.label = 'Date';
                     column.type = 'date';
                     column.typeAttributes = {
                         day: 'numeric',
@@ -223,8 +224,13 @@ export default class GetAccountTransactions extends LightningElement {
                         year: 'numeric'
                     };
                 } else if (fieldName === 'Name') {
+                    column.label = 'Name';
                     column.type = 'text';
                     column.wrapText = false;
+                } else if (fieldName.toLowerCase().includes('reference')) {
+                    column.label = 'Customer Reference';
+                } else if (fieldName.toLowerCase().includes('status')) {
+                    column.label = 'Status';
                 }
 
                 columns.push(column);

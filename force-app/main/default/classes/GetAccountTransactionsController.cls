@@ -61,6 +61,16 @@ public class GetAccountTransactionsController {
 		String whereClause = '';
 		Boolean hasWhereClause = false;
 
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Customer_Reference__c')) {
+			fieldsToQuery += ', Customer_Reference__c';
+		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Payment_Reference__c')) {
+			fieldsToQuery += ', Payment_Reference__c';
+		}
+
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'posting_status__c')) {
+			fieldsToQuery += ', posting_status__c';
+		}
+
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'To_Account__c')) {
 			whereClause += ' WHERE To_Account__c = \'' + accountId + '\'';
 			hasWhereClause = true;
@@ -86,7 +96,6 @@ public class GetAccountTransactionsController {
 					whereClause += ' WHERE Pay_Date__c >= '+ String.valueOf(fromDate) + ' AND Pay_Date__c <= ' + String.valueOf(toDate);
 					hasWhereClause = true;
 				}
-
 			}
 		}
 

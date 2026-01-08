@@ -71,6 +71,12 @@ public class GetAccountTransactionsController {
 			fieldsToQuery += ', posting_status__c';
 		}
 
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Transaction_Currency__c')) {
+			fieldsToQuery += ', Transaction_Currency__r.ISO_Code__c';
+		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Currency__c')) {
+			fieldsToQuery += ', Currency__r.ISO_Code__c';
+		}
+
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'To_Account__c')) {
 			whereClause += ' WHERE To_Account__c = \'' + accountId + '\'';
 			hasWhereClause = true;

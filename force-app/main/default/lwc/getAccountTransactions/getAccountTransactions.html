@@ -44,18 +44,20 @@
                         </div>
 
                         <!-- Transaction Status -->
-                        <div class="slds-col slds-size_1-of-2">
-                            <div class="slds-form-element">
-                                <label class="slds-form-element__label">
-                                    Transaction Status
-                                </label>
-                                <div class="slds-form-element__control">
-                                    <lightning-checkbox-group options={statusOptions} value={selectedStatuses}
-                                        onchange={handleStatusChange}>
-                                    </lightning-checkbox-group>
+                        <template lwc:if={showTransactionStatus}>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label">
+                                        Transaction Status
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <lightning-checkbox-group options={statusOptions} value={selectedStatuses}
+                                            onchange={handleStatusChange}>
+                                        </lightning-checkbox-group>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
                     </div>
                 </div>
             </div>

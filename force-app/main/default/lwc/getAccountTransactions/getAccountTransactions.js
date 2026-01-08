@@ -162,13 +162,17 @@ export default class GetAccountTransactions extends LightningElement {
                 this.transactionsData = results
                     .filter(result => result.recordCount > 0)
                     .map(result => {
-                        const columns = this.buildColumns(result.records);
+                        const flattenedRecords = result.records.map(record =>
+                            this.flattenRecord(record)
+                        );
+
+                        const columns = this.buildColumns(flattenedRecords);
                         return {
                             objectName: result.objectName,
                             displayLabel: result.displayLabel,
-                            records: result.records,
+                            records: flattenedRecords,
                             recordCount: result.recordCount,
-                            filteredRecords: result.records,
+                            filteredRecords: flattenedRecords,
                             columns: columns,
                             searchTerm: '',
                             hasRecords: true
@@ -198,6 +202,26 @@ export default class GetAccountTransactions extends LightningElement {
         }
     }
 
+    flattenRecord(record) {
+        const flat = {};
+
+        Object.keys(record).forEach(key => {
+            if (key === 'attributes') return;
+            const value = record[key];
+
+            if (typeof value === 'object' && value !== null) {
+                Object.keys(value).forEach(childKey => {
+                    flat[`${key}_${childKey}`] = value[childKey];
+                });
+            } else {
+                flat[key] = value;
+            }
+        });
+
+        return flat;
+    }
+
+
     buildColumns(records) {
         if (!records || records.length === 0) {
             return [];
@@ -207,7 +231,7 @@ export default class GetAccountTransactions extends LightningElement {
         const firstRecord = records[0];
 
         Object.keys(firstRecord).forEach(fieldName => {
-            if (fieldName !== 'attributes' && fieldName !== 'Id') {
+            if (fieldName !== 'attributes' && fieldName !== 'Id' && !(fieldName.toLowerCase().includes('currency') && !fieldName.toLowerCase().includes('iso'))) {
                 const column = {
                     label: fieldName,
                     fieldName: fieldName,
@@ -231,6 +255,8 @@ export default class GetAccountTransactions extends LightningElement {
                     column.label = 'Customer Reference';
                 } else if (fieldName.toLowerCase().includes('status')) {
                     column.label = 'Status';
+                } else if (fieldName.toLowerCase().includes('currency') && fieldName.toLowerCase().includes('iso')) {
+                    column.label = 'Currency'
                 }
 
                 columns.push(column);
@@ -273,6 +299,10 @@ export default class GetAccountTransactions extends LightningElement {
 
     get hasTransactionData() {
         return this.transactionsData && this.transactionsData.length > 0;
+    }
+
+    get showTransactionStatus() {
+        return (this.selectedType === '' || this.selectedType === 'All')
     }
 
     handleDone() {

@@ -1,3 +1,126 @@
-* {
+/* Transaction Section Styling */
+.transaction-section {
+    background: #f1f1f1;
+    border: 1px solid #dddbda;
+    border-radius: 0.25rem;
+}
 
+/* Search Input Styling */
+.search-input {
+    max-width: 400px;
+}
+
+/* Datatable Container */
+.datatable-container {
+    border: 1px solid #dddbda;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+/* Page Header Enhancements */
+.slds-page-header {
+    background: #fafaf9;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    border-left: 3px solid #0070d2;
+}
+
+.slds-page-header__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #080707;
+}
+
+/* Card Body Spacing */
+.slds-card__body_inner {
+    max-height: 58vh;
+    overflow-y: auto;
+}
+
+/* Empty State Styling */
+.slds-box {
+    background: #fafaf9;
+    border: 1px dashed #dddbda;
+    border-radius: 0.25rem;
+}
+
+/* Lightning Icon Centering */
+lightning-icon {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .search-input {
+        max-width: 100%;
+    }
+
+    .slds-page-header__title {
+        font-size: 1rem;
+    }
+}
+
+/* Loading Spinner Overlay */
+lightning-spinner {
+    z-index: 9999;
+}
+
+/* Form Elements Spacing */
+.slds-form-element {
+    margin-bottom: 1rem;
+}
+
+/* Button Alignment */
+.slds-align_absolute-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Card Footer Styling */
+.slds-card__footer {
+    background: #fafaf9;
+    padding: 1rem;
+    border-top: 1px solid #dddbda;
+}
+
+/* Status Text */
+.slds-text-color_weak {
+    color: #706e6b;
+}
+
+/* Record Count Badge */
+.slds-text-body_small {
+    font-size: 0.875rem;
+}
+
+/* Datatable Row Hover Effect */
+lightning-datatable {
+    --slds-c-datatable-row-hover-background-color: #f3f2f2;
+}
+
+/* Scrollbar Styling for Card Body */
+.slds-card__body_inner::-webkit-scrollbar {
+    width: 8px;
+}
+
+.slds-card__body_inner::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.slds-card__body_inner::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.slds-card__body_inner::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Transaction Section Hover Effect */
+.transaction-section:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease-in-out;
 }

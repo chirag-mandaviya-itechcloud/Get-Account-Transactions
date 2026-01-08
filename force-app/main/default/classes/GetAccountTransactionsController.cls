@@ -39,10 +39,15 @@ public class GetAccountTransactionsController {
 			List<Transaction_Type__c> transactionTypes = [SELECT Id, Transaction_Master_Object__c FROM Transaction_Type__c];
 
 			Set<String> transactionObjectNames = new Set<String>();
+			String nameSpace = getOrgNameSpace();
+            Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
 
 			for (Transaction_Type__c typ : transactionTypes) {
 				if (typ.Transaction_Master_Object__c != null){
-					transactionObjectNames.add(typ.Transaction_Master_Object__c);
+					String fullObjectName = nameSpace + typ.Transaction_Master_Object__c;
+					if (globalDescribe.containsKey(fullObjectName)) {
+                        transactionObjectNames.add(typ.Transaction_Master_Object__c);
+					}
 				}
 			}
 			return new List<String>(transactionObjectNames);
@@ -109,14 +114,19 @@ public class GetAccountTransactionsController {
 	}
 
 	@AuraEnabled
-	public static TransactionDataWrapper getAllTransactionMasterObjectData(String objectName,String accountId, Date fromDate, Date toDate, List<String> statuses){
+	public static TransactionDataWrapper getAllTransactionMasterObjectData(String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses){
 		try {
 			String nameSpace = getOrgNameSpace();
         	String fullObjectName = nameSpace + objectName;
 
 			if (!objectExists(fullObjectName)) {
 				System.debug('Object does not exist: ' + fullObjectName);
-				return new TransactionDataWrapper();
+				TransactionDataWrapper emptyWrapper = new TransactionDataWrapper();
+                emptyWrapper.objectName = objectName;
+                emptyWrapper.displayLabel = objectName;
+                emptyWrapper.records = new List<SObject>();
+                emptyWrapper.recordCount = 0;
+                return emptyWrapper;
 			}
 
 			String fieldsToQuery = 'Id, Name';

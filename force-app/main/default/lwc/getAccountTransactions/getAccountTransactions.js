@@ -134,6 +134,7 @@ export default class GetAccountTransactions extends LightningElement {
             }
         } catch (error) {
             console.error("Error fetching all transactions objects : ", error);
+            this.showToast("Error", "Error fetching transaction objects", "error");
         } finally {
             this.isLoading = false;
         }
@@ -158,12 +159,21 @@ export default class GetAccountTransactions extends LightningElement {
                 const results = await Promise.all(promises);
 
                 // Map results to wrapper data
-                this.transactionsData = results.map(result => ({
-                    objectName: result.objectName,
-                    displayLabel: result.displayLabel,
-                    records: result.records,
-                    recordCount: result.recordCount
-                }));
+                this.transactionsData = results
+                    .filter(result => result.recordCount > 0)
+                    .map(result => {
+                        const columns = this.buildColumns(result.records);
+                        return {
+                            objectName: result.objectName,
+                            displayLabel: result.displayLabel,
+                            records: result.records,
+                            recordCount: result.recordCount,
+                            filteredRecords: result.records,
+                            columns: columns,
+                            searchTerm: '',
+                            hasRecords: true
+                        };
+                    });
 
                 console.log("All Data: ", this.transactionsData);
 
@@ -182,23 +192,94 @@ export default class GetAccountTransactions extends LightningElement {
             }
         } catch (error) {
             console.error("Error fetching all transactions objects data : ", error);
+            this.showToast("Error", error.body?.message || "Error fetching transactions", "error");
         } finally {
             this.isLoading = false;
         }
     }
 
+    buildColumns(records) {
+        if (!records || records.length === 0) {
+            return [];
+        }
+
+        const columns = [];
+        const firstRecord = records[0];
+
+        Object.keys(firstRecord).forEach(fieldName => {
+            if (fieldName !== 'attributes' && fieldName !== 'Id') {
+                const column = {
+                    label: fieldName,
+                    fieldName: fieldName,
+                    type: '',
+                    sortable: true
+                }
+
+                if (fieldName.toLowerCase().includes('date')) {
+                    column.type = 'date';
+                    column.typeAttributes = {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                    };
+                } else if (fieldName === 'Name') {
+                    column.type = 'text';
+                    column.wrapText = false;
+                }
+
+                columns.push(column);
+            }
+        });
+        return columns;
+    }
+
+    handleSearch(event) {
+        const searchTerm = event.target.value.toLowerCase();
+        const objectName = event.target.dataset.object;
+
+        console.log(`Searching ${objectName} for: ${searchTerm}`);
+
+        this.transactionsData = this.transactionsData.map(transactionObj => {
+            if (transactionObj.objectName === objectName) {
+                const filteredRecords = transactionObj.records.filter(record => {
+                    return Object.keys(record).some(key => {
+                        if (key === 'attributes' && key === 'Id') return false;
+
+                        const value = record[key];
+                        if (value === null || value === undefined) return false;
+
+                        return String(value).toLowerCase().includes(searchTerm);
+                    });
+                });
+
+                console.log(`Found ${filteredRecords.length} records matching "${searchTerm}"`);
+
+                return {
+                    ...transactionObj,
+                    searchTerm: searchTerm,
+                    filteredRecords: filteredRecords,
+                    hasRecords: filteredRecords.length > 0
+                };
+            }
+            return transactionObj;
+        });
+    }
+
+    get hasTransactionData() {
+        return this.transactionsData && this.transactionsData.length > 0;
+    }
 
     handleDone() {
         // Close the quick action modal
         this.dispatchEvent(new CloseActionScreenEvent());
     }
 
-    showToast(mTitle, mMessage, mVariant) {
+    showToast(title, message, variant) {
         this.dispatchEvent(
             new ShowToastEvent({
-                title: mTitle,
-                message: mMessage,
-                variant: mVariant
+                title: title,
+                message: message,
+                variant: variant
             }),
         )
     }

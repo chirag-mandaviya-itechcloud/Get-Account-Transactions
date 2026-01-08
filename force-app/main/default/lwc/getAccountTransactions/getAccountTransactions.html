@@ -61,8 +61,63 @@
             </div>
         </template>
         <template lwc:if={transactionsPage}>
-            <div class=" slds-p-around_medium">
-                This is Transaction Page
+            <div class="slds-card__body_inner slds-p-around_medium">
+                <template for:each={transactionsData} for:item="transactionObj">
+                    <div key={transactionObj.objectName} class="transaction-section slds-m-bottom_large">
+                        <!-- Object Header with Count -->
+                        <div class="slds-p-around_small">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2 slds-align-middle">
+                                    <h1 class="slds-page-header__title slds-truncate slds-text-heading_medium slds-p-bottom_xx-small"
+                                        title={transactionObj.displayLabel}>
+                                        {transactionObj.displayLabel}
+                                    </h1>
+                                    <p class="slds-text-color_weak">
+                                        {transactionObj.recordCount} items
+                                    </p>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <lightning-input type="search" placeholder="Search record..."
+                                        value={transactionObj.searchTerm} data-object={transactionObj.objectName}
+                                        onchange={handleSearch} class="search-input">
+                                    </lightning-input>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <template if:true={transactionObj.hasRecords}>
+                            <div class="datatable-container ">
+                                <lightning-datatable key-field="Id" data={transactionObj.filteredRecords}
+                                    columns={transactionObj.columns} hide-checkbox-column>
+                                </lightning-datatable>
+                            </div>
+                        </template>
+
+                        <!-- No Records Message -->
+                        <template if:false={transactionObj.hasRecords}>
+                            <div class="slds-text-align_center slds-m-vertical_medium slds-p-around_medium slds-box">
+                                <lightning-icon icon-name="utility:info" size="small" class="slds-m-bottom_x-small">
+                                </lightning-icon>
+                                <p class="slds-text-color_weak">No records found</p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- No Data Message -->
+                <template if:false={hasTransactionData}>
+                    <div class="slds-text-align_center slds-m-vertical_xx-large">
+                        <lightning-icon icon-name="utility:search" size="large" class="slds-m-bottom_small">
+                        </lightning-icon>
+                        <p class="slds-text-heading_small slds-text-color_weak slds-m-bottom_small">
+                            No transaction data available
+                        </p>
+                        <p class="slds-text-body_regular slds-text-color_weak">
+                            Try adjusting your filter criteria
+                        </p>
+                    </div>
+                </template>
             </div>
         </template>
 

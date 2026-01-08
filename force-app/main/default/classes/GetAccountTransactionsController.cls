@@ -124,7 +124,7 @@ public class GetAccountTransactionsController {
 			}
 		}
 
-		String query = 'SELECT ' + fieldsToQuery + ' FROM ' + objectName + whereClause;
+		String query = 'SELECT ' + fieldsToQuery + ' FROM ' + objectName + whereClause + ' Order By Name desc';
 		return query;
 	}
 

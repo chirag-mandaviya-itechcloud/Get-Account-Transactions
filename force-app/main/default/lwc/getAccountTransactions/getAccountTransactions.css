@@ -14,7 +14,8 @@
 .datatable-container {
     border: 1px solid #dddbda;
     border-radius: 0.25rem;
-    overflow: hidden;
+    overflow: auto;
+    max-height: 300px;
 }
 
 /* Page Header Enhancements */

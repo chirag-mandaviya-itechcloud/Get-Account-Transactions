@@ -279,6 +279,8 @@ export default class GetAccountTransactions extends LightningElement {
                 column.label = 'Currency';
             } else if (flattenedFieldName.toLowerCase().includes('nature') && flattenedFieldName.toLowerCase().includes('transaction')) {
                 column.label = 'Type';
+            } else if (flattenedFieldName.toLowerCase().includes('outstanding')) {
+                column.label = 'Outstanding';
             }
 
             columns.push(column);

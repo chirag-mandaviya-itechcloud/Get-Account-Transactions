@@ -109,6 +109,11 @@ public class GetAccountTransactionsController {
 			fieldsToQuery += ', Nature_of_Transaction__c';
 		}
 
+		// Add outstanding field in the query
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Outstanding_Amount__c')) {
+			fieldsToQuery += ', Outstanding_Amount__c';
+		}
+
 		// Add account filter in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'To_Account__c')) {
 			whereClause += ' WHERE To_Account__c = \'' + accountId + '\'';

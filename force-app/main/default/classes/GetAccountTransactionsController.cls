@@ -17,11 +17,11 @@
 public class GetAccountTransactionsController {
 
 	public class TransactionDataWrapper {
-    @AuraEnabled public String objectName { get; set; }
-    @AuraEnabled public String displayLabel { get; set; }
-    @AuraEnabled public List<SObject> records { get; set; }
-    @AuraEnabled public Integer recordCount { get; set; }
-}
+		@AuraEnabled public String objectName { get; set; }
+		@AuraEnabled public String displayLabel { get; set; }
+		@AuraEnabled public List<SObject> records { get; set; }
+		@AuraEnabled public Integer recordCount { get; set; }
+	}
 
 	@AuraEnabled
 	public static Account getAccountDetails(String recordId) {
@@ -56,27 +56,59 @@ public class GetAccountTransactionsController {
 		}
 	}
 
-	private static String buildDynamicQuery(String fieldsToQuery, String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses) {
+	@AuraEnabled
+	public static List<String> getOutstandingTransactionMasterObject(){
+		try {
+			List<Transaction_Type__c> transactionTypes = [SELECT Id, Transaction_Master_Object__c FROM Transaction_Type__c WHERE s2p3__Transaction_Category__c = 'Primary'];
+
+			Set<String> transactionObjectNames = new Set<String>();
+			String nameSpace = getOrgNameSpace();
+            Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
+
+			for (Transaction_Type__c typ : transactionTypes) {
+				if (typ.Transaction_Master_Object__c != null){
+					String fullObjectName = nameSpace + typ.Transaction_Master_Object__c;
+					if (globalDescribe.containsKey(fullObjectName)) {
+                        transactionObjectNames.add(typ.Transaction_Master_Object__c);
+					}
+				}
+			}
+			return new List<String>(transactionObjectNames);
+		} catch (Exception e) {
+			throw new AuraHandledException(e.getMessage());
+		}
+	}
+
+	private static String buildDynamicQuery(String fieldsToQuery, String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses, String txnType) {
 		String nameSpace = getOrgNameSpace();
 		String whereClause = '';
 		Boolean hasWhereClause = false;
 
+		// Add Customer reference field in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'Customer_Reference__c')) {
 			fieldsToQuery += ', Customer_Reference__c';
 		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Payment_Reference__c')) {
 			fieldsToQuery += ', Payment_Reference__c';
 		}
 
+		// Add Status field in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'posting_status__c')) {
 			fieldsToQuery += ', posting_status__c';
 		}
 
+		// Add Currency field in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'Transaction_Currency__c')) {
 			fieldsToQuery += ', Transaction_Currency__r.ISO_Code__c';
 		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Currency__c')) {
 			fieldsToQuery += ', Currency__r.ISO_Code__c';
 		}
 
+		// Add Type field in the query
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Nature_of_Transaction__c')) {
+			fieldsToQuery += ', Nature_of_Transaction__c';
+		}
+
+		// Add account filter in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'To_Account__c')) {
 			whereClause += ' WHERE To_Account__c = \'' + accountId + '\'';
 			hasWhereClause = true;
@@ -85,6 +117,7 @@ public class GetAccountTransactionsController {
 			hasWhereClause = true;
 		}
 
+		// Add date filter in query
 		if (fromDate != null && toDate != null) {
 			if (doesFieldExist(namespace+objectName, nameSpace+'Invoice_Date__c')) {
 				fieldsToQuery += ', ' + 'Invoice_Date__c';
@@ -105,6 +138,7 @@ public class GetAccountTransactionsController {
 			}
 		}
 
+		// Add status filter in query
 		if (statuses != null && !statuses.isEmpty()) {
 			if (doesFieldExist(namespace+objectName, nameSpace+'Posting_Status__c')) {
 				String statusFilter = ' Posting_Status__c IN (';
@@ -124,12 +158,32 @@ public class GetAccountTransactionsController {
 			}
 		}
 
+		// Add filters for outstanding data
+		if (txnType == 'Outstanding') {
+			if (doesFieldExist(namespace+objectName, nameSpace+'Posting_Status__c')) {
+				if (hasWhereClause) {
+					whereClause += ' AND Posting_Status__c = \'Posted\'';
+				} else {
+					whereClause += ' WHERE Posting_Status__c = \'Posted\'';
+					hasWhereClause = true;
+				}
+			}
+			if (doesFieldExist(namespace+objectName, nameSpace+'Outstanding_Amount__c')) {
+				if (hasWhereClause) {
+					whereClause += ' AND Outstanding_Amount__c != 0';
+				} else {
+					whereClause += ' WHERE Outstanding_Amount__c != 0';
+					hasWhereClause = true;
+				}
+			}
+		}
+
 		String query = 'SELECT ' + fieldsToQuery + ' FROM ' + objectName + whereClause + ' Order By Name desc';
 		return query;
 	}
 
 	@AuraEnabled
-	public static TransactionDataWrapper getAllTransactionMasterObjectData(String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses){
+	public static TransactionDataWrapper getTransactionMasterObjectData(String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses, String txnType){
 		try {
 			String nameSpace = getOrgNameSpace();
         	String fullObjectName = nameSpace + objectName;
@@ -145,7 +199,7 @@ public class GetAccountTransactionsController {
 			}
 
 			String fieldsToQuery = 'Id, Name';
-			String query = buildDynamicQuery(fieldsToQuery, objectName, accountId, fromDate, toDate, statuses);
+			String query = buildDynamicQuery(fieldsToQuery, objectName, accountId, fromDate, toDate, statuses, txnType);
 
 			System.debug('Query: '+ query);
 
@@ -197,6 +251,4 @@ public class GetAccountTransactionsController {
 			return objectApiName; // Fallback to API name
 		}
 	}
-
-
 }

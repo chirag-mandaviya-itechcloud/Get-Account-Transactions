@@ -4,7 +4,8 @@ import { CurrentPageReference } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getAccountDetails from '@salesforce/apex/GetAccountTransactionsController.getAccountDetails';
 import getAllTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getAllTransactionMasterObject';
-import getAllTransactionMasterObjectData from '@salesforce/apex/GetAccountTransactionsController.getAllTransactionMasterObjectData';
+import getTransactionMasterObjectData from '@salesforce/apex/GetAccountTransactionsController.getTransactionMasterObjectData';
+import getOutstandingTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getOutstandingTransactionMasterObject'
 
 export default class GetAccountTransactions extends LightningElement {
     recordId; // Account Record ID
@@ -120,7 +121,9 @@ export default class GetAccountTransactions extends LightningElement {
                 console.log("All Transactions objects : ", result);
                 this.transactionObjectNames = result;
             } else if (this.selectedType == 'Outstanding') {
-
+                const result = await getOutstandingTransactionMasterObject();
+                console.log("Outstanding Transaction objects : ", result);
+                this.transactionObjectNames = result;
             } else if (this.selectedType == 'Overdue') {
 
             } else if (this.selectedType == 'Paid Invoice') {
@@ -146,12 +149,13 @@ export default class GetAccountTransactions extends LightningElement {
             if (this.selectedType == 'All') {
                 // Use map to create an array of promises
                 const promises = this.transactionObjectNames.map(objName =>
-                    getAllTransactionMasterObjectData({
+                    getTransactionMasterObjectData({
                         objectName: objName,
                         accountId: this.recordId,
                         fromDate: this.fromDate,
                         toDate: this.toDate,
-                        statuses: this.selectedStatuses
+                        statuses: this.selectedStatuses,
+                        txnType: this.selectedType
                     })
                 );
 
@@ -256,7 +260,9 @@ export default class GetAccountTransactions extends LightningElement {
                 } else if (fieldName.toLowerCase().includes('status')) {
                     column.label = 'Status';
                 } else if (fieldName.toLowerCase().includes('currency') && fieldName.toLowerCase().includes('iso')) {
-                    column.label = 'Currency'
+                    column.label = 'Currency';
+                } else if (fieldName.toLowerCase().includes('nature') && fieldName.toLowerCase().includes('transaction')) {
+                    column.label = 'Type';
                 }
 
                 columns.push(column);

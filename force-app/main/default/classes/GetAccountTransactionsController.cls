@@ -86,15 +86,15 @@ public class GetAccountTransactionsController {
 		Boolean hasWhereClause = false;
 
 		// Add Customer reference field in query
-		if (doesFieldExist(nameSpace+objectName, nameSpace+'Customer_Reference__c')) {
-			fieldsToQuery += ', Customer_Reference__c';
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Customer_reference__c')) {
+			fieldsToQuery += ', Customer_reference__c';
 		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Payment_Reference__c')) {
 			fieldsToQuery += ', Payment_Reference__c';
 		}
 
 		// Add Status field in query
-		if (doesFieldExist(nameSpace+objectName, nameSpace+'posting_status__c')) {
-			fieldsToQuery += ', posting_status__c';
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Posting_Status__c')) {
+			fieldsToQuery += ', Posting_Status__c';
 		}
 
 		// Add Currency field in query

@@ -146,59 +146,59 @@ export default class GetAccountTransactions extends LightningElement {
     async getTransactionObjectsData() {
         this.isLoading = true;
         try {
-            if (this.selectedType == 'All') {
-                // Use map to create an array of promises
-                const promises = this.transactionObjectNames.map(objName =>
-                    getTransactionMasterObjectData({
-                        objectName: objName,
-                        accountId: this.recordId,
-                        fromDate: this.fromDate,
-                        toDate: this.toDate,
-                        statuses: this.selectedStatuses,
-                        txnType: this.selectedType
-                    })
-                );
+            // if (this.selectedType == 'All') {
+            // Use map to create an array of promises
+            const promises = this.transactionObjectNames.map(objName =>
+                getTransactionMasterObjectData({
+                    objectName: objName,
+                    accountId: this.recordId,
+                    fromDate: this.fromDate,
+                    toDate: this.toDate,
+                    statuses: this.selectedStatuses,
+                    txnType: this.selectedType
+                })
+            );
 
-                // Wait for all promises to resolve
-                const results = await Promise.all(promises);
+            // Wait for all promises to resolve
+            const results = await Promise.all(promises);
 
-                // Map results to wrapper data
-                this.transactionsData = results
-                    .filter(result => result.recordCount > 0)
-                    .map(result => {
-                        console.log("All Data without flatten : ", result);
-                        const flattenedRecords = result.records.map(record =>
-                            this.flattenRecord(record)
-                        );
+            // Map results to wrapper data
+            this.transactionsData = results
+                .filter(result => result.recordCount > 0)
+                .map(result => {
+                    console.log("All Data without flatten : ", result);
+                    const flattenedRecords = result.records.map(record =>
+                        this.flattenRecord(record)
+                    );
 
-                        const columns = this.buildColumnsFromFieldNames(result.fieldNames);
-                        return {
-                            objectName: result.objectName,
-                            displayLabel: result.displayLabel,
-                            records: flattenedRecords,
-                            recordCount: result.recordCount,
-                            filteredRecords: flattenedRecords,
-                            columns: columns,
-                            searchTerm: '',
-                            hasRecords: true
-                        };
-                    });
+                    const columns = this.buildColumnsFromFieldNames(result.fieldNames);
+                    return {
+                        objectName: result.objectName,
+                        displayLabel: result.displayLabel,
+                        records: flattenedRecords,
+                        recordCount: result.recordCount,
+                        filteredRecords: flattenedRecords,
+                        columns: columns,
+                        searchTerm: '',
+                        hasRecords: true
+                    };
+                });
 
-                console.log("All Data: ", this.transactionsData);
+            console.log("All Data: ", this.transactionsData);
 
-            } else if (this.selectedType == 'Outstanding') {
+            // } else if (this.selectedType == 'Outstanding') {
 
-            } else if (this.selectedType == 'Overdue') {
+            // } else if (this.selectedType == 'Overdue') {
 
-            } else if (this.selectedType == 'Paid Invoice') {
+            // } else if (this.selectedType == 'Paid Invoice') {
 
-            } else if (this.selectedType == 'Credit Notes') {
+            // } else if (this.selectedType == 'Credit Notes') {
 
-            } else if (this.selectedType == 'Receipt & Payment') {
+            // } else if (this.selectedType == 'Receipt & Payment') {
 
-            } else if (this.selectedType == 'Journals') {
+            // } else if (this.selectedType == 'Journals') {
 
-            }
+            // }
         } catch (error) {
             console.error("Error fetching all transactions objects data : ", error);
             this.showToast("Error", error.body?.message || "Error fetching transactions", "error");

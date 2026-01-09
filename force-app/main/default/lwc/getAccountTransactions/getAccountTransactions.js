@@ -166,11 +166,12 @@ export default class GetAccountTransactions extends LightningElement {
                 this.transactionsData = results
                     .filter(result => result.recordCount > 0)
                     .map(result => {
+                        console.log("All Data without flatten : ", result);
                         const flattenedRecords = result.records.map(record =>
                             this.flattenRecord(record)
                         );
 
-                        const columns = this.buildColumns(flattenedRecords);
+                        const columns = this.buildColumnsFromFieldNames(result.fieldNames);
                         return {
                             objectName: result.objectName,
                             displayLabel: result.displayLabel,
@@ -215,7 +216,9 @@ export default class GetAccountTransactions extends LightningElement {
 
             if (typeof value === 'object' && value !== null) {
                 Object.keys(value).forEach(childKey => {
-                    flat[`${key}_${childKey}`] = value[childKey];
+                    if (childKey !== 'attributes') {
+                        flat[`${key}_${childKey}`] = value[childKey];
+                    }
                 });
             } else {
                 flat[key] = value;
@@ -225,49 +228,62 @@ export default class GetAccountTransactions extends LightningElement {
         return flat;
     }
 
-
-    buildColumns(records) {
-        if (!records || records.length === 0) {
+    buildColumnsFromFieldNames(fieldNames) {
+        if (!fieldNames || fieldNames.length === 0) {
             return [];
         }
 
         const columns = [];
-        const firstRecord = records[0];
 
-        Object.keys(firstRecord).forEach(fieldName => {
-            if (fieldName !== 'attributes' && fieldName !== 'Id' && !(fieldName.toLowerCase().includes('currency') && !fieldName.toLowerCase().includes('iso'))) {
-                const column = {
-                    label: fieldName,
-                    fieldName: fieldName,
-                    type: '',
-                    sortable: true
-                }
-
-                if (fieldName.toLowerCase().includes('date')) {
-                    column.label = 'Date';
-                    column.type = 'date';
-                    column.typeAttributes = {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                    };
-                } else if (fieldName === 'Name') {
-                    column.label = 'Name';
-                    column.type = 'text';
-                    column.wrapText = false;
-                } else if (fieldName.toLowerCase().includes('reference')) {
-                    column.label = 'Customer Reference';
-                } else if (fieldName.toLowerCase().includes('status')) {
-                    column.label = 'Status';
-                } else if (fieldName.toLowerCase().includes('currency') && fieldName.toLowerCase().includes('iso')) {
-                    column.label = 'Currency';
-                } else if (fieldName.toLowerCase().includes('nature') && fieldName.toLowerCase().includes('transaction')) {
-                    column.label = 'Type';
-                }
-
-                columns.push(column);
+        fieldNames.forEach(fieldName => {
+            // Skip attributes and Id fields
+            if (fieldName === 'attributes' || fieldName === 'Id') {
+                return;
             }
+
+            // Handle relationship fields (e.g., Transaction_Currency__r.ISO_Code__c)
+            let flattenedFieldName = fieldName;
+            if (fieldName.includes('.')) {
+                flattenedFieldName = fieldName.replace(/\./g, '_')
+            }
+
+            // Skip currency fields that don't have ISO in them
+            if (flattenedFieldName.toLowerCase().includes('currency') && !flattenedFieldName.toLowerCase().includes('iso')) {
+                return;
+            }
+
+            const column = {
+                label: fieldName,
+                fieldName: flattenedFieldName,
+                type: 'text',
+                sortable: true
+            };
+
+            if (flattenedFieldName.toLowerCase().includes('date')) {
+                column.label = 'Date';
+                column.type = 'date';
+                column.typeAttributes = {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                };
+            } else if (flattenedFieldName === 'Name') {
+                column.label = 'Name';
+                column.type = 'text';
+                column.wrapText = false;
+            } else if (flattenedFieldName.toLowerCase().includes('reference')) {
+                column.label = 'Customer Reference';
+            } else if (flattenedFieldName.toLowerCase().includes('status')) {
+                column.label = 'Status';
+            } else if (flattenedFieldName.toLowerCase().includes('currency') && flattenedFieldName.toLowerCase().includes('iso')) {
+                column.label = 'Currency';
+            } else if (flattenedFieldName.toLowerCase().includes('nature') && flattenedFieldName.toLowerCase().includes('transaction')) {
+                column.label = 'Type';
+            }
+
+            columns.push(column);
         });
+
         return columns;
     }
 

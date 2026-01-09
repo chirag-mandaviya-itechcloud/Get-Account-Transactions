@@ -21,6 +21,7 @@ public class GetAccountTransactionsController {
 		@AuraEnabled public String displayLabel { get; set; }
 		@AuraEnabled public List<SObject> records { get; set; }
 		@AuraEnabled public Integer recordCount { get; set; }
+		@AuraEnabled public List<String> fieldNames { get; set; }
 	}
 
 	@AuraEnabled
@@ -195,6 +196,7 @@ public class GetAccountTransactionsController {
                 emptyWrapper.displayLabel = objectName;
                 emptyWrapper.records = new List<SObject>();
                 emptyWrapper.recordCount = 0;
+				emptyWrapper.fieldNames = new List<String>();
                 return emptyWrapper;
 			}
 
@@ -205,18 +207,59 @@ public class GetAccountTransactionsController {
 
 			List<SObject> records = Database.query(query);
 
+			// Extract field names from the query
+			List<String> queriedFields = extractFieldNamesFromQuery(query, fullObjectName, nameSpace);
+
 			// Create wrapper
 			TransactionDataWrapper wrapper = new TransactionDataWrapper();
 			wrapper.objectName = objectName;
 			wrapper.displayLabel = getObjectLabel(fullObjectName);
 			wrapper.records = records;
 			wrapper.recordCount = records.size();
+			wrapper.fieldNames = queriedFields;
 
 			return wrapper;
 
 		} catch (Exception e) {
 			throw new AuraHandledException(e.getMessage());
 		}
+	}
+
+	private static List<String> extractFieldNamesFromQuery(String query, String objectName, String nameSpace) {
+		List<String> fieldNames = new List<String>();
+
+		String selectClause = query.substringBetween('SELECT ', ' FROM ');
+		if (selectClause != null) {
+			List<String> fields = selectClause.split(',');
+
+			for (String field : fields) {
+				field = field.trim();
+
+				if (field.contains('.')) {
+					List<String> fieldParts = field.split('\\.');
+					List<String> namespacedParts = new List<String>();
+
+					for (String part : fieldParts) {
+						if (!part.startsWith(nameSpace)) {
+							namespacedParts.add(nameSpace + part);
+						} else {
+							namespacedParts.add(part);
+						}
+					}
+
+					// Join back with dot
+					String namespacedField = String.join(namespacedParts, '.');
+					fieldNames.add(namespacedField);
+				} else {
+					if (field == 'Name' || field == 'Id') {
+						fieldNames.add(field);
+					} else {
+						fieldNames.add(nameSpace+field);
+					}
+				}
+			}
+		}
+		return fieldNames;
 	}
 
 	private static Boolean objectExists(String objectApiName) {

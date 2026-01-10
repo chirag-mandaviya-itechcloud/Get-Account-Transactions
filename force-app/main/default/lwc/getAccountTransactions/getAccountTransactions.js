@@ -125,7 +125,9 @@ export default class GetAccountTransactions extends LightningElement {
                 console.log("Outstanding Transaction objects : ", result);
                 this.transactionObjectNames = result;
             } else if (this.selectedType == 'Overdue') {
-
+                const result = await getOutstandingTransactionMasterObject();
+                console.log("Overdue Transaction objects : ", result);
+                this.transactionObjectNames = result;
             } else if (this.selectedType == 'Paid Invoice') {
 
             } else if (this.selectedType == 'Credit Notes') {
@@ -171,7 +173,11 @@ export default class GetAccountTransactions extends LightningElement {
                         this.flattenRecord(record)
                     );
 
-                    const columns = this.buildColumnsFromFieldNames(result.fieldNames);
+                    const lowercaseFieldNames = result.fieldNames.map(fieldName =>
+                        fieldName.toLowerCase()
+                    );
+
+                    const columns = this.buildColumnsFromFieldNames(lowercaseFieldNames);
                     return {
                         objectName: result.objectName,
                         displayLabel: result.displayLabel,
@@ -217,11 +223,12 @@ export default class GetAccountTransactions extends LightningElement {
             if (typeof value === 'object' && value !== null) {
                 Object.keys(value).forEach(childKey => {
                     if (childKey !== 'attributes') {
-                        flat[`${key}_${childKey}`] = value[childKey];
+                        const lowercaseKey = `${key}_${childKey}`.toLowerCase();
+                        flat[lowercaseKey] = value[childKey];
                     }
                 });
             } else {
-                flat[key] = value;
+                flat[key.toLowerCase()] = value;
             }
         });
 
@@ -237,7 +244,7 @@ export default class GetAccountTransactions extends LightningElement {
 
         fieldNames.forEach(fieldName => {
             // Skip attributes and Id fields
-            if (fieldName === 'attributes' || fieldName === 'Id') {
+            if (fieldName === 'attributes' || fieldName === 'id') {
                 return;
             }
 
@@ -248,7 +255,7 @@ export default class GetAccountTransactions extends LightningElement {
             }
 
             // Skip currency fields that don't have ISO in them
-            if (flattenedFieldName.toLowerCase().includes('currency') && !flattenedFieldName.toLowerCase().includes('iso')) {
+            if (flattenedFieldName.includes('currency') && !flattenedFieldName.includes('iso')) {
                 return;
             }
 
@@ -259,7 +266,7 @@ export default class GetAccountTransactions extends LightningElement {
                 sortable: true
             };
 
-            if (flattenedFieldName.toLowerCase().includes('date')) {
+            if (flattenedFieldName.includes('date') || flattenedFieldName.includes('due')) {
                 column.label = 'Date';
                 column.type = 'date';
                 column.typeAttributes = {
@@ -271,16 +278,18 @@ export default class GetAccountTransactions extends LightningElement {
                 column.label = 'Name';
                 column.type = 'text';
                 column.wrapText = false;
-            } else if (flattenedFieldName.toLowerCase().includes('reference')) {
+            } else if (flattenedFieldName.includes('reference')) {
                 column.label = 'Customer Reference';
-            } else if (flattenedFieldName.toLowerCase().includes('status')) {
+            } else if (flattenedFieldName.includes('status')) {
                 column.label = 'Status';
-            } else if (flattenedFieldName.toLowerCase().includes('currency') && flattenedFieldName.toLowerCase().includes('iso')) {
+            } else if (flattenedFieldName.includes('currency') && flattenedFieldName.toLowerCase().includes('iso')) {
                 column.label = 'Currency';
-            } else if (flattenedFieldName.toLowerCase().includes('nature') && flattenedFieldName.toLowerCase().includes('transaction')) {
+            } else if (flattenedFieldName.includes('nature') && flattenedFieldName.toLowerCase().includes('transaction')) {
                 column.label = 'Type';
-            } else if (flattenedFieldName.toLowerCase().includes('outstanding')) {
+            } else if (flattenedFieldName.includes('outstanding')) {
                 column.label = 'Outstanding';
+            } else if (flattenedFieldName.includes('due')) {
+                column.label = 'Overdue Date';
             }
 
             columns.push(column);
@@ -299,7 +308,7 @@ export default class GetAccountTransactions extends LightningElement {
             if (transactionObj.objectName === objectName) {
                 const filteredRecords = transactionObj.records.filter(record => {
                     return Object.keys(record).some(key => {
-                        if (key === 'attributes' && key === 'Id') return false;
+                        if (key === 'attributes' && key === 'id') return false;
 
                         const value = record[key];
                         if (value === null || value === undefined) return false;

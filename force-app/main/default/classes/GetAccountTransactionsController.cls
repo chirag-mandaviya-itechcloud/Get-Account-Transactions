@@ -184,6 +184,27 @@ public class GetAccountTransactionsController {
 			}
 		}
 
+		// Add filters for overdue data
+		if (txnType == 'Overdue') {
+			if (doesFieldExist(namespace+objectName, nameSpace+'Due_On__c')) {
+				fieldsToQuery += ', Due_On__c';
+				if (hasWhereClause) {
+					whereClause += ' AND Due_On__c < TODAY';
+				} else {
+					whereClause += ' WHERE Due_On__c < TODAY';
+					hasWhereClause = true;
+				}
+			}
+			if (doesFieldExist(namespace+objectName, nameSpace+'Outstanding_Amount__c')) {
+				if (hasWhereClause) {
+					whereClause += ' AND Outstanding_Amount__c != 0';
+				} else {
+					whereClause += ' WHERE Outstanding_Amount__c != 0';
+					hasWhereClause = true;
+				}
+			}
+		}
+
 		String query = 'SELECT ' + fieldsToQuery + ' FROM ' + objectName + whereClause + ' Order By Name desc';
 		return query;
 	}

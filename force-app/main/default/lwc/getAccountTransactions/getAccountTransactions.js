@@ -7,6 +7,7 @@ import getAllTransactionMasterObject from '@salesforce/apex/GetAccountTransactio
 import getTransactionMasterObjectData from '@salesforce/apex/GetAccountTransactionsController.getTransactionMasterObjectData';
 import getTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getTransactionMasterObject';
 import getCreditTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getCreditTransactionMasterObject';
+import getRAPTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getRAPTransactionMasterObject';
 
 export default class GetAccountTransactions extends LightningElement {
     recordId; // Account Record ID
@@ -138,7 +139,9 @@ export default class GetAccountTransactions extends LightningElement {
                 console.log("Credit Notes Transaction objects : ", result);
                 this.transactionObjectNames = result;
             } else if (this.selectedType == 'Receipt & Payment') {
-
+                const result = await getRAPTransactionMasterObject();
+                console.log("Receipt & Payment Transaction objects : ", result);
+                this.transactionObjectNames = result;
             } else if (this.selectedType == 'Journals') {
 
             }
@@ -153,7 +156,6 @@ export default class GetAccountTransactions extends LightningElement {
     async getTransactionObjectsData() {
         this.isLoading = true;
         try {
-            // if (this.selectedType == 'All') {
             // Use map to create an array of promises
             const promises = this.transactionObjectNames.map(objName =>
                 getTransactionMasterObjectData({
@@ -194,22 +196,7 @@ export default class GetAccountTransactions extends LightningElement {
                         hasRecords: true
                     };
                 });
-
             console.log("All Data: ", this.transactionsData);
-
-            // } else if (this.selectedType == 'Outstanding') {
-
-            // } else if (this.selectedType == 'Overdue') {
-
-            // } else if (this.selectedType == 'Paid Invoice') {
-
-            // } else if (this.selectedType == 'Credit Notes') {
-
-            // } else if (this.selectedType == 'Receipt & Payment') {
-
-            // } else if (this.selectedType == 'Journals') {
-
-            // }
         } catch (error) {
             console.error("Error fetching all transactions objects data : ", error);
             this.showToast("Error", error.body?.message || "Error fetching transactions", "error");

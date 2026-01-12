@@ -22,6 +22,7 @@ public class GetAccountTransactionsController {
 		@AuraEnabled public List<SObject> records { get; set; }
 		@AuraEnabled public Integer recordCount { get; set; }
 		@AuraEnabled public List<String> fieldNames { get; set; }
+		@AuraEnabled public String query { get; set; }
 	}
 
 	@AuraEnabled
@@ -104,6 +105,29 @@ public class GetAccountTransactionsController {
 		}
 	}
 
+	@AuraEnabled
+	public static List<String> getRAPTransactionMasterObject(){
+		try {
+			List<Transaction_Type__c> transactionTypes = [SELECT Id, Transaction_Master_Object__c FROM Transaction_Type__c WHERE Transaction_Category__c = 'Secondary'];
+
+			Set<String> transactionObjectNames = new Set<String>();
+			String nameSpace = getOrgNameSpace();
+			Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
+
+			for (Transaction_Type__c typ : transactionTypes) {
+				if (typ.Transaction_Master_Object__c != null) {
+					String fullObjectName = nameSpace + typ.Transaction_Master_Object__c;
+					if (globalDescribe.containsKey(fullObjectName)) {
+						transactionObjectNames.add(typ.Transaction_Master_Object__c);
+					}
+				}
+			}
+			return new List<String>(transactionObjectNames);
+		} catch (Exception e) {
+			throw new AuraHandledException(e.getMessage());
+		}
+	}
+
 	private static String buildDynamicQuery(String fieldsToQuery, String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses, String txnType) {
 		String nameSpace = getOrgNameSpace();
 		String whereClause = '';
@@ -136,6 +160,8 @@ public class GetAccountTransactionsController {
 		// Add outstanding field in the query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'Outstanding_Amount__c')) {
 			fieldsToQuery += ', Outstanding_Amount__c';
+		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Amount__c')) {
+			fieldsToQuery += ', Amount__c';
 		}
 
 		// Add account filter in query
@@ -230,6 +256,7 @@ public class GetAccountTransactionsController {
 			}
 		}
 
+		// Add filters for paid invoice data
 		if (txnType == 'Paid Invoice') {
 			if (doesFieldExist(namespace+objectName, nameSpace+'Paid_Amount__c')) {
 				// add Paid Amount field in query
@@ -262,6 +289,7 @@ public class GetAccountTransactionsController {
                 emptyWrapper.records = new List<SObject>();
                 emptyWrapper.recordCount = 0;
 				emptyWrapper.fieldNames = new List<String>();
+				emptyWrapper.query = '';
                 return emptyWrapper;
 			}
 
@@ -282,6 +310,7 @@ public class GetAccountTransactionsController {
 			wrapper.records = records;
 			wrapper.recordCount = records.size();
 			wrapper.fieldNames = queriedFields;
+			wrapper.query = query;
 
 			return wrapper;
 

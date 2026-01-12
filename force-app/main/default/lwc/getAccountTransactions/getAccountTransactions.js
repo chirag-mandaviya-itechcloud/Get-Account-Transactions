@@ -5,7 +5,8 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getAccountDetails from '@salesforce/apex/GetAccountTransactionsController.getAccountDetails';
 import getAllTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getAllTransactionMasterObject';
 import getTransactionMasterObjectData from '@salesforce/apex/GetAccountTransactionsController.getTransactionMasterObjectData';
-import getOutstandingTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getOutstandingTransactionMasterObject'
+import getTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getTransactionMasterObject';
+import getCreditTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getCreditTransactionMasterObject';
 
 export default class GetAccountTransactions extends LightningElement {
     recordId; // Account Record ID
@@ -121,17 +122,21 @@ export default class GetAccountTransactions extends LightningElement {
                 console.log("All Transactions objects : ", result);
                 this.transactionObjectNames = result;
             } else if (this.selectedType == 'Outstanding') {
-                const result = await getOutstandingTransactionMasterObject();
+                const result = await getTransactionMasterObject();
                 console.log("Outstanding Transaction objects : ", result);
                 this.transactionObjectNames = result;
             } else if (this.selectedType == 'Overdue') {
-                const result = await getOutstandingTransactionMasterObject();
+                const result = await getTransactionMasterObject();
                 console.log("Overdue Transaction objects : ", result);
                 this.transactionObjectNames = result;
             } else if (this.selectedType == 'Paid Invoice') {
-
+                const result = await getTransactionMasterObject();
+                console.log("Paid Invoice Transaction objects : ", result);
+                this.transactionObjectNames = result;
             } else if (this.selectedType == 'Credit Notes') {
-
+                const result = await getCreditTransactionMasterObject();
+                console.log("Credit Notes Transaction objects : ", result);
+                this.transactionObjectNames = result;
             } else if (this.selectedType == 'Receipt & Payment') {
 
             } else if (this.selectedType == 'Journals') {
@@ -274,7 +279,7 @@ export default class GetAccountTransactions extends LightningElement {
                     month: 'short',
                     year: 'numeric'
                 };
-            } else if (flattenedFieldName === 'Name') {
+            } else if (flattenedFieldName === 'name') {
                 column.label = 'Name';
                 column.type = 'text';
                 column.wrapText = false;
@@ -290,6 +295,8 @@ export default class GetAccountTransactions extends LightningElement {
                 column.label = 'Outstanding';
             } else if (flattenedFieldName.includes('due')) {
                 column.label = 'Overdue Date';
+            } else if (flattenedFieldName.includes('paid')) {
+                column.label = 'Paid Amount';
             }
 
             columns.push(column);

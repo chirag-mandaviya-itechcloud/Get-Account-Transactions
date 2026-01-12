@@ -58,9 +58,33 @@ public class GetAccountTransactionsController {
 	}
 
 	@AuraEnabled
-	public static List<String> getOutstandingTransactionMasterObject(){
+	public static List<String> getTransactionMasterObject(){
+		// Used method for Outstanding and Overdue and Paid Invoice
 		try {
 			List<Transaction_Type__c> transactionTypes = [SELECT Id, Transaction_Master_Object__c FROM Transaction_Type__c WHERE s2p3__Transaction_Category__c = 'Primary'];
+
+			Set<String> transactionObjectNames = new Set<String>();
+			String nameSpace = getOrgNameSpace();
+            Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
+
+			for (Transaction_Type__c typ : transactionTypes) {
+				if (typ.Transaction_Master_Object__c != null){
+					String fullObjectName = nameSpace + typ.Transaction_Master_Object__c;
+					if (globalDescribe.containsKey(fullObjectName)) {
+                        transactionObjectNames.add(typ.Transaction_Master_Object__c);
+					}
+				}
+			}
+			return new List<String>(transactionObjectNames);
+		} catch (Exception e) {
+			throw new AuraHandledException(e.getMessage());
+		}
+	}
+
+	@AuraEnabled
+	public static List<String> getCreditTransactionMasterObject(){
+		try {
+			List<Transaction_Type__c> transactionTypes = [SELECT Id, Transaction_Master_Object__c FROM Transaction_Type__c WHERE Nature_of_Accounting__c = 'Credit' AND Transaction_Category__c = 'Primary'];
 
 			Set<String> transactionObjectNames = new Set<String>();
 			String nameSpace = getOrgNameSpace();
@@ -187,6 +211,7 @@ public class GetAccountTransactionsController {
 		// Add filters for overdue data
 		if (txnType == 'Overdue') {
 			if (doesFieldExist(namespace+objectName, nameSpace+'Due_On__c')) {
+				// add Due On field in query
 				fieldsToQuery += ', Due_On__c';
 				if (hasWhereClause) {
 					whereClause += ' AND Due_On__c < TODAY';
@@ -200,6 +225,20 @@ public class GetAccountTransactionsController {
 					whereClause += ' AND Outstanding_Amount__c != 0';
 				} else {
 					whereClause += ' WHERE Outstanding_Amount__c != 0';
+					hasWhereClause = true;
+				}
+			}
+		}
+
+		if (txnType == 'Paid Invoice') {
+			if (doesFieldExist(namespace+objectName, nameSpace+'Paid_Amount__c')) {
+				// add Paid Amount field in query
+				fieldsToQuery += ', Paid_Amount__c';
+				// Paid Amount should not equal 0
+				if (hasWhereClause) {
+					whereClause += ' AND Paid_Amount__c != 0';
+				} else {
+					whereClause += ' WHERE Paid_Amount__c != 0';
 					hasWhereClause = true;
 				}
 			}

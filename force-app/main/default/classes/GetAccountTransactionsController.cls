@@ -128,6 +128,29 @@ public class GetAccountTransactionsController {
 		}
 	}
 
+	@AuraEnabled
+	public static List<String> getJournalTransactionMasterObject() {
+		try {
+			List<Transaction_Type__c> transactionTypes = [SELECT Id, Transaction_Master_Object__c FROM Transaction_Type__c WHERE Transaction_Category__c = 'Journal'];
+
+			Set<String> transactionObjectNames = new Set<String>();
+			String nameSpace = getOrgNameSpace();
+            Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
+
+			for (Transaction_Type__c typ : transactionTypes) {
+				if (typ.Transaction_Master_Object__c != null){
+					String fullObjectName = nameSpace + typ.Transaction_Master_Object__c;
+					if (globalDescribe.containsKey(fullObjectName)) {
+						transactionObjectNames.add(typ.Transaction_Master_Object__c);
+					}
+				}
+			}
+			return new List<String>(transactionObjectNames);
+		} catch (Exception e) {
+			throw new AuraHandledException(e.getMessage());
+		}
+	}
+
 	private static String buildDynamicQuery(String fieldsToQuery, String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses, String txnType) {
 		String nameSpace = getOrgNameSpace();
 		String whereClause = '';
@@ -213,13 +236,15 @@ public class GetAccountTransactionsController {
 				}
 			}
 		} else {
-			// When no statuses are provided, exclude Draft and Posted statuses
-			if (doesFieldExist(namespace+objectName, nameSpace+'Posting_Status__c')) {
-				if (hasWhereClause) {
-					whereClause += ' AND Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
-				} else {
-					whereClause += ' WHERE Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
-					hasWhereClause = true;
+			if (txnType == 'All') {
+				// When no statuses are provided, exclude Draft and Posted statuses
+				if (doesFieldExist(namespace+objectName, nameSpace+'Posting_Status__c')) {
+					if (hasWhereClause) {
+						whereClause += ' AND Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
+					} else {
+						whereClause += ' WHERE Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
+						hasWhereClause = true;
+					}
 				}
 			}
 		}
@@ -268,14 +293,22 @@ public class GetAccountTransactionsController {
 
 		// Add filters for paid invoice data
 		if (txnType == 'Paid Invoice') {
-			if (doesFieldExist(namespace+objectName, nameSpace+'Paid_Amount__c')) {
-				// add Paid Amount field in query
-				fieldsToQuery += ', Paid_Amount__c';
-				// Paid Amount should not equal 0
+			// if (doesFieldExist(namespace+objectName, nameSpace+'Paid_Amount__c')) {
+			// 	// add Paid Amount field in query
+			// 	fieldsToQuery += ', Paid_Amount__c';
+			// 	// Paid Amount should not equal 0
+			// 	if (hasWhereClause) {
+			// 		whereClause += ' AND Paid_Amount__c != 0';
+			// 	} else {
+			// 		whereClause += ' WHERE Paid_Amount__c != 0';
+			// 		hasWhereClause = true;
+			// 	}
+			// }
+			if (doesFieldExist(namespace+objectName, nameSpace+'Outstanding_Amount__c')) {
 				if (hasWhereClause) {
-					whereClause += ' AND Paid_Amount__c != 0';
+					whereClause += ' AND Outstanding_Amount__c = 0';
 				} else {
-					whereClause += ' WHERE Paid_Amount__c != 0';
+					whereClause += ' WHERE Outstanding_Amount__c = 0';
 					hasWhereClause = true;
 				}
 			}

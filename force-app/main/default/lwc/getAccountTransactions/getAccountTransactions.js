@@ -8,6 +8,7 @@ import getTransactionMasterObjectData from '@salesforce/apex/GetAccountTransacti
 import getTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getTransactionMasterObject';
 import getCreditTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getCreditTransactionMasterObject';
 import getRAPTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getRAPTransactionMasterObject';
+import getJournalTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getJournalTransactionMasterObject';
 
 export default class GetAccountTransactions extends LightningElement {
     recordId; // Account Record ID
@@ -146,7 +147,9 @@ export default class GetAccountTransactions extends LightningElement {
                 console.log("Receipt & Payment Transaction objects : ", result);
                 this.transactionObjectNames = result;
             } else if (this.selectedType == 'Journals') {
-
+                const result = await getJournalTransactionMasterObject();
+                console.log("Journals Transaction objects : ", result);
+                this.transactionObjectNames = result;
             }
         } catch (error) {
             console.error("Error fetching all transactions objects : ", error);
@@ -194,6 +197,7 @@ export default class GetAccountTransactions extends LightningElement {
                         records: flattenedRecords,
                         recordCount: result.recordCount,
                         filteredRecords: flattenedRecords,
+                        query: result.query,
                         columns: columns,
                         searchTerm: '',
                         hasRecords: true

@@ -90,6 +90,9 @@ export default class GetAccountTransactions extends LightningElement {
 
         this.selectedType = event.detail.value;
         console.log('selectedType:', this.selectedType);
+        if (this.selectedType !== 'All') {
+            this.selectedStatuses = [];
+        }
     }
 
     handleStatusChange(event) {

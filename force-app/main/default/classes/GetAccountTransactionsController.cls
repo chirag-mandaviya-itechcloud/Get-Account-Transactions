@@ -212,6 +212,16 @@ public class GetAccountTransactionsController {
 					hasWhereClause = true;
 				}
 			}
+		} else {
+			// When no statuses are provided, exclude Draft and Posted statuses
+			if (doesFieldExist(namespace+objectName, nameSpace+'Posting_Status__c')) {
+				if (hasWhereClause) {
+					whereClause += ' AND Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
+				} else {
+					whereClause += ' WHERE Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
+					hasWhereClause = true;
+				}
+			}
 		}
 
 		// Add filters for outstanding data

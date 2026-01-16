@@ -237,12 +237,11 @@ public class GetAccountTransactionsController {
 			}
 		} else {
 			if (txnType == 'All') {
-				// When no statuses are provided, exclude Draft and Posted statuses
 				if (doesFieldExist(namespace+objectName, nameSpace+'Posting_Status__c')) {
 					if (hasWhereClause) {
-						whereClause += ' AND Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
+						whereClause += ' AND Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\' AND Posting_Status__c != \'Deleted\'';
 					} else {
-						whereClause += ' WHERE Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\'';
+						whereClause += ' WHERE Posting_Status__c != \'Draft\' AND Posting_Status__c != \'Posted\' AND Posting_Status__c != \'Deleted\'';
 						hasWhereClause = true;
 					}
 				}
@@ -293,22 +292,22 @@ public class GetAccountTransactionsController {
 
 		// Add filters for paid invoice data
 		if (txnType == 'Paid Invoice') {
-			// if (doesFieldExist(namespace+objectName, nameSpace+'Paid_Amount__c')) {
-			// 	// add Paid Amount field in query
-			// 	fieldsToQuery += ', Paid_Amount__c';
-			// 	// Paid Amount should not equal 0
-			// 	if (hasWhereClause) {
-			// 		whereClause += ' AND Paid_Amount__c != 0';
-			// 	} else {
-			// 		whereClause += ' WHERE Paid_Amount__c != 0';
-			// 		hasWhereClause = true;
-			// 	}
-			// }
 			if (doesFieldExist(namespace+objectName, nameSpace+'Outstanding_Amount__c')) {
 				if (hasWhereClause) {
 					whereClause += ' AND Outstanding_Amount__c = 0';
 				} else {
 					whereClause += ' WHERE Outstanding_Amount__c = 0';
+					hasWhereClause = true;
+				}
+			}
+		}
+
+		if (txnType == 'Credit Notes') {
+			if (doesFieldExist(nameSpace+objectName, nameSpace+'Posting_Status__c')) {
+				if (hasWhereClause) {
+					whereClause += ' AND Posting_Status__c IN (\'Posted\', \'Draft\')';
+				} else {
+					whereClause += ' WHERE Posting_Status__c IN (\'Posted\', \'Draft\')';
 					hasWhereClause = true;
 				}
 			}

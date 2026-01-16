@@ -11,7 +11,7 @@ import getRAPTransactionMasterObject from '@salesforce/apex/GetAccountTransactio
 import getJournalTransactionMasterObject from '@salesforce/apex/GetAccountTransactionsController.getJournalTransactionMasterObject';
 
 export default class GetAccountTransactions extends LightningElement {
-    recordId; // Account Record ID
+    recordId;
     balanceOutstanding = '0';
     fromDate = '2024-01-01';
     toDate = '';
@@ -23,7 +23,6 @@ export default class GetAccountTransactions extends LightningElement {
     transactionObjectNames = [];
     transactionsData = [];
 
-    // Type picklist options
     typeOptions = [
         { label: '--None--', value: '' },
         { label: 'All', value: 'All' },
@@ -35,14 +34,12 @@ export default class GetAccountTransactions extends LightningElement {
         { label: 'Journals', value: 'Journals' }
     ];
 
-    // Status checkbox options
     statusOptions = [
         { label: 'Draft', value: 'Draft' },
         { label: 'Posted', value: 'Posted' }
     ];
 
     connectedCallback() {
-        // Set today's date as To Date
         const today = new Date();
         this.toDate = today.toISOString().split('T')[0];
     }
@@ -50,7 +47,6 @@ export default class GetAccountTransactions extends LightningElement {
     @wire(CurrentPageReference)
     getPageRef(pageRef) {
         if (pageRef) {
-            // Quick Action recordId comes from state.recordId
             this.recordId = pageRef.state?.recordId;
             this.baseUrl = window.location.origin;
 
@@ -242,18 +238,15 @@ export default class GetAccountTransactions extends LightningElement {
         const columns = [];
 
         fieldNames.forEach(fieldName => {
-            // Skip attributes and Id fields
             if (fieldName === 'attributes' || fieldName === 'id') {
                 return;
             }
 
-            // Handle relationship fields (e.g., Transaction_Currency__r.ISO_Code__c)
             let flattenedFieldName = fieldName;
             if (fieldName.includes('.')) {
                 flattenedFieldName = fieldName.replace(/\./g, '_')
             }
 
-            // Skip currency fields that don't have ISO in them
             if (flattenedFieldName.includes('currency') && !flattenedFieldName.includes('iso')) {
                 return;
             }
@@ -340,7 +333,6 @@ export default class GetAccountTransactions extends LightningElement {
     }
 
     handleDone() {
-        // Close the quick action modal
         this.dispatchEvent(new CloseActionScreenEvent());
     }
 

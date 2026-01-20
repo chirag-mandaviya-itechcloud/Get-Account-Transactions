@@ -62,11 +62,12 @@ export default class GetAccountTransactions extends LightningElement {
         getAccountDetails({ recordId: this.recordId })
             .then(result => {
                 console.log("result: ", result);
+                this.balanceOutstanding = result.s2p3__Account_Balance__c || '0';
                 this.isLoading = false;
             })
             .catch(error => {
                 console.error('Error fetching balance:', error);
-                this.balanceOutstanding = '1,000'; // Fallback value
+                this.balanceOutstanding = '0'; // Fallback value
                 this.isLoading = false;
             });
     }
@@ -284,6 +285,10 @@ export default class GetAccountTransactions extends LightningElement {
                 column.label = 'Overdue Date';
             } else if (flattenedFieldName.includes('paid')) {
                 column.label = 'Paid Amount';
+            } else if (flattenedFieldName.includes('gross')) {
+                column.label = 'Gross Amount';
+            } else if (flattenedFieldName.includes('account')) {
+                column.label = 'Account';
             }
 
             columns.push(column);

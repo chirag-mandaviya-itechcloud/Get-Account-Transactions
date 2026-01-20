@@ -156,6 +156,23 @@ public class GetAccountTransactionsController {
 		String whereClause = '';
 		Boolean hasWhereClause = false;
 
+		// Special handling for Journal Lines object
+		if (objectName == 'Journal__c') {
+			String query = 'SELECT Id, Name, Journal__r.Invoice_Date__c, Journal__r.Nature_of_Transaction__c, Journal__r.Customer_reference__c, Journal__r.Transaction_Currency__r.ISO_Code__c, Journal__r.Posting_Status__c FROM Journal_Lines__c WHERE Account__c = \'' + accountId + '\' Order By Name desc';
+			return query;
+		}
+
+		// Add Invoice Number field in query
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Transaction_Number__c ')) {
+			fieldsToQuery += ', Transaction_Number__c';
+		}
+
+		// Add Gross Amount field in query
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Gross_Amount__c')) {
+			fieldsToQuery += ', Gross_Amount__c';
+		}
+
+
 		// Add Customer reference field in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'Customer_reference__c')) {
 			fieldsToQuery += ', Customer_reference__c';
@@ -164,9 +181,9 @@ public class GetAccountTransactionsController {
 		}
 
 		// Add Status field in query
-		if (doesFieldExist(nameSpace+objectName, nameSpace+'Posting_Status__c')) {
-			fieldsToQuery += ', Posting_Status__c';
-		}
+		// if (doesFieldExist(nameSpace+objectName, nameSpace+'Posting_Status__c')) {
+		// 	fieldsToQuery += ', Posting_Status__c';
+		// }
 
 		// Add Currency field in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'Transaction_Currency__c')) {
@@ -176,9 +193,9 @@ public class GetAccountTransactionsController {
 		}
 
 		// Add Type field in the query
-		if (doesFieldExist(nameSpace+objectName, nameSpace+'Nature_of_Transaction__c')) {
-			fieldsToQuery += ', Nature_of_Transaction__c';
-		}
+		// if (doesFieldExist(nameSpace+objectName, nameSpace+'Nature_of_Transaction__c')) {
+		// 	fieldsToQuery += ', Nature_of_Transaction__c';
+		// }
 
 		// Add outstanding field in the query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'Outstanding_Amount__c')) {
@@ -189,9 +206,11 @@ public class GetAccountTransactionsController {
 
 		// Add account filter in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'To_Account__c')) {
+			fieldsToQuery += ', To_Account__c';
 			whereClause += ' WHERE To_Account__c = \'' + accountId + '\'';
 			hasWhereClause = true;
 		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Account__c')) {
+			fieldsToQuery += ', Account__c';
 			whereClause += ' WHERE Account__c = \'' + accountId + '\'';
 			hasWhereClause = true;
 		}

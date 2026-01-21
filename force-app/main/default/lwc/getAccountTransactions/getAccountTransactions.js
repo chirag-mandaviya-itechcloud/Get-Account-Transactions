@@ -238,23 +238,23 @@ export default class GetAccountTransactions extends LightningElement {
         const columnOrder = [
             'name',
             'date',
+            'due',
             'txnnumber',
+            'account',
+            'currency',
             'reference',
             'status',
             'type',
             'gross',
             'outstanding',
             'paid',
-            'due',
-            'currency',
-            'account'
         ];
 
         const columns = [];
         const columnMap = new Map();
 
         fieldNames.forEach(fieldName => {
-            if (fieldName === 'attributes' || fieldName === 'id') {
+            if (fieldName === 'attributes' || fieldName === 'id' || fieldName === 'name' || fieldName.includes('reference')) {
                 return;
             }
 
@@ -321,7 +321,7 @@ export default class GetAccountTransactions extends LightningElement {
                 column.label = 'Account';
                 column.orderKey = 'account';
             } else if (flattenedFieldName.includes('transaction') && flattenedFieldName.includes('number')) {
-                column.label = 'Transaction Number';
+                column.label = 'Invoice Number';
                 column.orderKey = 'txnnumber';
             }
 

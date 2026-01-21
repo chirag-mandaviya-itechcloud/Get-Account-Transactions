@@ -7,7 +7,8 @@
 
 /* Search Input Styling */
 .search-input {
-    max-width: 400px;
+    width: 400px;
+    display: inline-block;
 }
 
 /* Datatable Container */

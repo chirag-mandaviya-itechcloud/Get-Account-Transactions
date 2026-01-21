@@ -1,4 +1,5 @@
 <template>
+    <div class="override-css"></div>
     <div>
         <!-- Header -->
         <header class="slds-p-around_medium slds-border_bottom">
@@ -79,10 +80,12 @@
                                     </p>
                                 </div>
                                 <div class="slds-col slds-size_1-of-2">
-                                    <lightning-input type="search" placeholder="Search record..."
-                                        value={transactionObj.searchTerm} data-object={transactionObj.objectName}
-                                        onchange={handleSearch} class="search-input">
-                                    </lightning-input>
+                                    <div class="slds-text-align_right">
+                                        <lightning-input type="search" placeholder="Search record..."
+                                            value={transactionObj.searchTerm} data-object={transactionObj.objectName}
+                                            onchange={handleSearch} class="search-input">
+                                        </lightning-input>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -126,6 +129,9 @@
         <!-- Footer -->
         <template lwc:if={homePage}>
             <footer class="slds-text-align_right slds-p-around_small slds-border_top">
+                <lightning-button label="Cancel" variant="destructive" onclick={handleDone} disabled={isLoading}
+                    class="slds-m-left_x-small">
+                </lightning-button>
                 <lightning-button label="Next" variant="brand" onclick={handleNext} disabled={isLoading}
                     class="slds-m-left_x-small">
                 </lightning-button>
@@ -133,6 +139,9 @@
         </template>
         <template lwc:if={transactionsPage}>
             <footer class="slds-text-align_right slds-p-around_small slds-border_top">
+                <lightning-button label="Cancel" variant="destructive" onclick={handleDone} disabled={isLoading}
+                    class="slds-m-left_x-small">
+                </lightning-button>
                 <lightning-button label="Done" variant="brand" onclick={handleDone} disabled={isLoading}
                     class="slds-m-left_x-small">
                 </lightning-button>

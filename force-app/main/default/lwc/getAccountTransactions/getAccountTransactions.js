@@ -44,6 +44,18 @@ export default class GetAccountTransactions extends LightningElement {
         this.toDate = today.toISOString().split('T')[0];
     }
 
+    renderedCallback() {
+        console.log('Modal renderedCallback called');
+        const STYLE = document.createElement("style");
+        STYLE.innerText = `.uiModal--medium .modal-container{
+            width: 100% !important;
+            max-width: 1200px !important;
+            min-width: 600px !important;
+        }`;
+        // this.template.querySelector('lightning-quick-action-panel').appendChild(STYLE);
+        this.template.querySelector('.override-css').appendChild(STYLE);
+    }
+
     @wire(CurrentPageReference)
     getPageRef(pageRef) {
         if (pageRef) {

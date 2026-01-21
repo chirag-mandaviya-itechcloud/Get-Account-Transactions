@@ -163,7 +163,7 @@ public class GetAccountTransactionsController {
 		}
 
 		// Add Invoice Number field in query
-		if (doesFieldExist(nameSpace+objectName, nameSpace+'Transaction_Number__c ')) {
+		if (doesFieldExist(nameSpace+objectName, nameSpace+'Transaction_Number__c')) {
 			fieldsToQuery += ', Transaction_Number__c';
 		}
 

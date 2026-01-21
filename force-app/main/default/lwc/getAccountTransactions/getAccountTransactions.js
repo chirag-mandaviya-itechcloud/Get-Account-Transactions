@@ -235,7 +235,23 @@ export default class GetAccountTransactions extends LightningElement {
             return [];
         }
 
+        const columnOrder = [
+            'name',
+            'date',
+            'txnnumber',
+            'reference',
+            'status',
+            'type',
+            'gross',
+            'outstanding',
+            'paid',
+            'due',
+            'currency',
+            'account'
+        ];
+
         const columns = [];
+        const columnMap = new Map();
 
         fieldNames.forEach(fieldName => {
             if (fieldName === 'attributes' || fieldName === 'id') {
@@ -259,7 +275,8 @@ export default class GetAccountTransactions extends LightningElement {
                 label: fieldName,
                 fieldName: flattenedFieldName.toLowerCase(),
                 type: 'text',
-                sortable: true
+                sortable: true,
+                orderKey: 'other'
             };
 
             if (flattenedFieldName.includes('date') || flattenedFieldName.includes('due')) {
@@ -270,31 +287,62 @@ export default class GetAccountTransactions extends LightningElement {
                     month: 'short',
                     year: 'numeric'
                 };
+                column.orderKey = flattenedFieldName.includes('due') ? 'due' : 'date';
             } else if (flattenedFieldName === 'name') {
                 column.label = 'Name';
                 column.type = 'text';
                 column.wrapText = false;
+                column.orderKey = 'name';
             } else if (flattenedFieldName.includes('reference')) {
                 column.label = 'Customer Reference';
+                column.orderKey = 'reference';
             } else if (flattenedFieldName.includes('status')) {
                 column.label = 'Status';
+                column.orderKey = 'status';
             } else if (flattenedFieldName.includes('currency') && flattenedFieldName.includes('iso')) {
                 column.label = 'Currency';
+                column.orderKey = 'currency';
             } else if (flattenedFieldName.includes('nature') && flattenedFieldName.includes('transaction')) {
                 column.label = 'Type';
+                column.orderKey = 'type';
             } else if (flattenedFieldName.includes('outstanding')) {
                 column.label = 'Outstanding';
+                column.orderKey = 'outstanding';
             } else if (flattenedFieldName.includes('due')) {
                 column.label = 'Overdue Date';
+                column.orderKey = 'due';
             } else if (flattenedFieldName.includes('paid')) {
                 column.label = 'Paid Amount';
-            } else if (flattenedFieldName.includes('gross')) {
+                column.orderKey = 'paid';
+            } else if (flattenedFieldName.includes('gross') || flattenedFieldName.includes('amount')) {
                 column.label = 'Gross Amount';
+                column.orderKey = 'gross';
             } else if (flattenedFieldName.includes('account')) {
                 column.label = 'Account';
+                column.orderKey = 'account';
+            } else if (flattenedFieldName.includes('transaction') && flattenedFieldName.includes('number')) {
+                column.label = 'Transaction Number';
+                column.orderKey = 'txnnumber';
             }
 
-            columns.push(column);
+            if (!columnMap.has(column.orderKey)) {
+                columnMap.set(column.orderKey, []);
+            }
+            columnMap.get(column.orderKey).push(column);
+            // columns.push(column);
+        });
+
+        // Build ordered columns array based on columnOrder
+        columnOrder.forEach(orderKey => {
+            if (columnMap.has(orderKey)) {
+                columns.push(...columnMap.get(orderKey));
+                columnMap.delete(orderKey);
+            }
+        });
+
+        // Add any remaining columns that were not in the predefined order
+        columnMap.forEach(cols => {
+            columns.push(...cols);
         });
 
         return columns;

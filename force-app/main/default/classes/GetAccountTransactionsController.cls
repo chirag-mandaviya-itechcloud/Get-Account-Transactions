@@ -206,11 +206,11 @@ public class GetAccountTransactionsController {
 
 		// Add account filter in query
 		if (doesFieldExist(nameSpace+objectName, nameSpace+'To_Account__c')) {
-			fieldsToQuery += ', To_Account__c';
+			fieldsToQuery += ', To_Account__r.Name';
 			whereClause += ' WHERE To_Account__c = \'' + accountId + '\'';
 			hasWhereClause = true;
 		} else if (doesFieldExist(nameSpace+objectName, nameSpace+'Account__c')) {
-			fieldsToQuery += ', Account__c';
+			fieldsToQuery += ', Account__r.Name';
 			whereClause += ' WHERE Account__c = \'' + accountId + '\'';
 			hasWhereClause = true;
 		}
@@ -395,7 +395,7 @@ public class GetAccountTransactionsController {
 					List<String> namespacedParts = new List<String>();
 
 					for (String part : fieldParts) {
-						if (!part.startsWith(nameSpace)) {
+						if (!part.startsWith(nameSpace) && part != 'Name' && part != 'Id') {
 							namespacedParts.add(nameSpace + part);
 						} else {
 							namespacedParts.add(part);

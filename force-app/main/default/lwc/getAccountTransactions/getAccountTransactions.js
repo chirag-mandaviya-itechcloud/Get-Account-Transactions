@@ -209,22 +209,21 @@ export default class GetAccountTransactions extends LightningElement {
         }
     }
 
-    flattenRecord(record) {
+    flattenRecord(record, prefix = '') {
         const flat = {};
 
         Object.keys(record).forEach(key => {
             if (key === 'attributes') return;
-            const value = record[key];
 
-            if (typeof value === 'object' && value !== null) {
-                Object.keys(value).forEach(childKey => {
-                    if (childKey !== 'attributes') {
-                        const lowercaseKey = `${key}_${childKey}`.toLowerCase();
-                        flat[lowercaseKey] = value[childKey];
-                    }
-                });
+            const value = record[key];
+            const newKey = prefix ? `${prefix}_${key}` : key;
+
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                // Recursively flatten nested objects
+                const nestedFlat = this.flattenRecord(value, newKey);
+                Object.assign(flat, nestedFlat);
             } else {
-                flat[key.toLowerCase()] = value;
+                flat[newKey.toLowerCase()] = value;
             }
         });
 
@@ -252,9 +251,13 @@ export default class GetAccountTransactions extends LightningElement {
                 return;
             }
 
+            if (flattenedFieldName.includes('account') && !flattenedFieldName.includes('name')) {
+                return;
+            }
+
             const column = {
                 label: fieldName,
-                fieldName: flattenedFieldName,
+                fieldName: flattenedFieldName.toLowerCase(),
                 type: 'text',
                 sortable: true
             };
@@ -275,9 +278,9 @@ export default class GetAccountTransactions extends LightningElement {
                 column.label = 'Customer Reference';
             } else if (flattenedFieldName.includes('status')) {
                 column.label = 'Status';
-            } else if (flattenedFieldName.includes('currency') && flattenedFieldName.toLowerCase().includes('iso')) {
+            } else if (flattenedFieldName.includes('currency') && flattenedFieldName.includes('iso')) {
                 column.label = 'Currency';
-            } else if (flattenedFieldName.includes('nature') && flattenedFieldName.toLowerCase().includes('transaction')) {
+            } else if (flattenedFieldName.includes('nature') && flattenedFieldName.includes('transaction')) {
                 column.label = 'Type';
             } else if (flattenedFieldName.includes('outstanding')) {
                 column.label = 'Outstanding';

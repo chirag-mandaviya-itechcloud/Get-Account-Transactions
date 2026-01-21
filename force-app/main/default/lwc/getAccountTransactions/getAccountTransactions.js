@@ -287,7 +287,7 @@ export default class GetAccountTransactions extends LightningElement {
                     month: 'short',
                     year: 'numeric'
                 };
-                column.orderKey = flattenedFieldName.includes('due') ? 'due' : 'date';
+                column.orderKey = 'date';
             } else if (flattenedFieldName === 'name') {
                 column.label = 'Name';
                 column.type = 'text';

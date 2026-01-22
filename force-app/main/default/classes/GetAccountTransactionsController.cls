@@ -158,7 +158,7 @@ public class GetAccountTransactionsController {
 
 		// Special handling for Journal Lines object
 		if (objectName == 'Journal__c') {
-			String query = 'SELECT Id, Name, Journal__r.Invoice_Date__c, Journal__r.Nature_of_Transaction__c, Journal__r.Customer_reference__c, Journal__r.Transaction_Currency__r.ISO_Code__c, Journal__r.Posting_Status__c FROM Journal_Lines__c WHERE Account__c = \'' + accountId + '\' Order By Name desc';
+			String query = 'SELECT Id, Name, Journal__r.Invoice_Date__c, Journal__r.Transaction_Currency__r.ISO_Code__c, Journal__r.Transaction_Number__c, Account__r.Name FROM Journal_Lines__c WHERE Account__c = \'' + accountId + '\' Order By Name desc';
 			return query;
 		}
 

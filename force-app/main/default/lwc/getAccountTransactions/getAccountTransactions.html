@@ -126,10 +126,19 @@
             </div>
         </template>
 
+        <template lwc:if={pdfPage}>
+            <div class="slds-p-around_large slds-text-align_center">
+                <template if:true={showIframe}>
+                    <iframe src={iframeUrl} width="100%" height="500px" frameborder="0"
+                        title="Transactions PDF"></iframe>
+                </template>
+            </div>
+        </template>
+
         <!-- Footer -->
         <template lwc:if={homePage}>
             <footer class="slds-text-align_right slds-p-around_small slds-border_top">
-                <lightning-button label="Cancel" variant="destructive" onclick={handleDone} disabled={isLoading}
+                <lightning-button label="Cancel" variant="destructive" onclick={handleClose} disabled={isLoading}
                     class="slds-m-left_x-small">
                 </lightning-button>
                 <lightning-button label="Next" variant="brand" onclick={handleNext} disabled={isLoading}
@@ -139,10 +148,17 @@
         </template>
         <template lwc:if={transactionsPage}>
             <footer class="slds-text-align_right slds-p-around_small slds-border_top">
-                <lightning-button label="Cancel" variant="destructive" onclick={handleDone} disabled={isLoading}
+                <lightning-button label="Cancel" variant="destructive" onclick={handleClose} disabled={isLoading}
                     class="slds-m-left_x-small">
                 </lightning-button>
-                <lightning-button label="Done" variant="brand" onclick={handleDone} disabled={isLoading}
+                <lightning-button label="Next" variant="brand" onclick={handleGetPDF} disabled={isLoading}
+                    class="slds-m-left_x-small">
+                </lightning-button>
+            </footer>
+        </template>
+        <template lwc:if={pdfPage}>
+            <footer class="slds-text-align_right slds-p-around_small slds-border_top">
+                <lightning-button label="Done" variant="brand" onclick={handleClose} disabled={isLoading}
                     class="slds-m-left_x-small">
                 </lightning-button>
             </footer>

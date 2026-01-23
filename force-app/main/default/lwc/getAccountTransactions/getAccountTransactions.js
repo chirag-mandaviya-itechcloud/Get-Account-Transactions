@@ -20,8 +20,10 @@ export default class GetAccountTransactions extends LightningElement {
     isLoading = false;
     homePage = true;
     transactionsPage = false;
+    pdfPage = false;
     transactionObjectNames = [];
     transactionsData = [];
+    templateName = 'Account_Transaction_Template';
 
     typeOptions = [
         { label: '--None--', value: '' },
@@ -400,8 +402,26 @@ export default class GetAccountTransactions extends LightningElement {
         return (this.selectedType === '' || this.selectedType === 'All')
     }
 
-    handleDone() {
+    handleClose() {
         this.dispatchEvent(new CloseActionScreenEvent());
+    }
+
+    handleGetPDF() {
+        this.transactionsPage = false;
+        this.pdfPage = true;
+    }
+
+    get iframeUrl() {
+        if (!this.recordId || !this.templateName) {
+            return '';
+        }
+
+        return `/apex/TransactionPDF?templateDevName=${this.templateName}&whatId=${this.recordId}`;
+    }
+
+    get showIframe() {
+        console.log('iframeUrl:', this.iframeUrl);
+        return !this.isLoading && this.iframeUrl;
     }
 
     showToast(title, message, variant) {

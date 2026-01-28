@@ -24,6 +24,7 @@ export default class GetAccountTransactions extends LightningElement {
     transactionObjectNames = [];
     transactionsData = [];
     templateName = 'Account_Transaction_Template';
+    queries = [];
 
     typeOptions = [
         { label: '--None--', value: '' },
@@ -192,6 +193,9 @@ export default class GetAccountTransactions extends LightningElement {
             this.transactionsData = results
                 .filter(result => result.recordCount > 0)
                 .map(result => {
+                    if (result.query) {
+                        this.queries.push(result.objectName);
+                    }
                     console.log("All Data without flatten : ", result);
                     const flattenedRecords = result.records.map(record =>
                         this.flattenRecord(record)
@@ -409,6 +413,7 @@ export default class GetAccountTransactions extends LightningElement {
     handleGetPDF() {
         this.transactionsPage = false;
         this.pdfPage = true;
+        console.log('Queries for PDF generation:', this.queries);
     }
 
     get iframeUrl() {
@@ -416,7 +421,7 @@ export default class GetAccountTransactions extends LightningElement {
             return '';
         }
 
-        return `/apex/TransactionPDF?templateDevName=${this.templateName}&whatId=${this.recordId}`;
+        return `/apex/TransactionPDF?templateDevName=${this.templateName}&whatId=${this.recordId}&queries=${JSON.stringify(this.queries)}`;
     }
 
     get showIframe() {

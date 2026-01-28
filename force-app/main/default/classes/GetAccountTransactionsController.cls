@@ -15,21 +15,6 @@
  */
 
 public class GetAccountTransactionsController {
-    public String templateHtml { get; set; }
-    
-    public GetAccountTransactionsController() {
-        Id contactId   = ApexPages.currentPage().getParameters().get('contactId');
-        Id whatId      = ApexPages.currentPage().getParameters().get('whatId');
-        String devName = ApexPages.currentPage().getParameters().get('templateDevName');
-
-        if (String.isNotBlank(devName)) {
-            Id templateId = [SELECT Id FROM EmailTemplate WHERE DeveloperName = :devName LIMIT 1].Id;
-            Messaging.SingleEmailMessage mail =
-                Messaging.renderStoredEmailTemplate(templateId, contactId, whatId);
-            templateHtml = mail.getHtmlBody();
-        }
-    }
-
 	public class TransactionDataWrapper {
 		@AuraEnabled public String objectName { get; set; }
 		@AuraEnabled public String displayLabel { get; set; }

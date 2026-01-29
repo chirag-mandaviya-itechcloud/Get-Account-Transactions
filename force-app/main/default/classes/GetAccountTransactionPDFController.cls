@@ -7,6 +7,9 @@ public class GetAccountTransactionPDFController {
     public String statusesParam { get; set; }
     public List<QueryResult> queryResults { get; set; }
 
+	public Account accountDetails { get; set; }
+    public String statementDate { get; set; }
+    public String sentDate { get; set; }
 
     public class QueryResult {
         public String objectName { get; set; }
@@ -22,6 +25,12 @@ public class GetAccountTransactionPDFController {
         Date toDate = ApexPages.currentPage().getParameters().get('toDate') != null ? Date.valueOf(ApexPages.currentPage().getParameters().get('toDate')) : null;
         String txnType = ApexPages.currentPage().getParameters().get('txnType');
         String statusesParam = ApexPages.currentPage().getParameters().get('statuses');
+
+		// Set statement date and sent date
+        statementDate = String.valueOf(Date.today().format());
+        sentDate = String.valueOf(Date.today().format());
+
+
         List<String> statuses = new List<String>();
         if (String.isNotBlank(statusesParam)) {
             statuses = (List<String>) JSON.deserialize(statusesParam, List<String>.class);
@@ -41,6 +50,15 @@ public class GetAccountTransactionPDFController {
         System.debug('Statuses ---> '+ statuses);
 
         queryResults = new List<QueryResult>();
+
+		// Fetch Account Details
+        if (String.isNotBlank(whatId)) {
+            try {
+                accountDetails = [SELECT Id, Name, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, AccountNumber, Currency__r.Name, Company__r.Name, Company__r.Address_Line1__c, Company__r.Address_Line2__c, Company__r.Company_Street__c, Company__r.Company_City__c, Company__r.Company_State__c, Company__r.Company_PostalCode__c, Company__r.Company_Country__c, Company__r.Company_Registration_Number__c FROM Account WHERE Id = :whatId LIMIT 1];
+            } catch (Exception e) {
+                System.debug('Error fetching account details: ' + e.getMessage());
+            }
+        }
 
         if (String.isNotBlank(devName)) {
             try {

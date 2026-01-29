@@ -410,9 +410,13 @@ export default class GetAccountTransactions extends LightningElement {
     }
 
     handleGetPDF() {
-        this.transactionsPage = false;
-        this.pdfPage = true;
-        console.log('Queries for PDF generation:', this.queries);
+        try {
+            const url = this.baseUrl + this.iframeUrl;
+            window.open(url, '_blank');
+        } catch (error) {
+            console.error('Error opening PDF in new tab:', error);
+            this.showToast("Error", "Error opening PDF in new tab", "error");
+        }
     }
 
     get iframeUrl() {

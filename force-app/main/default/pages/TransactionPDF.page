@@ -19,26 +19,12 @@
                 box-sizing: border-box;
             }
             
-            body { 
-                font-family: Arial, sans-serif;
-                font-size: 9px;
-                line-height: 1.4;
-                color: #333;
-            }
-            
-            .header {
-                position: running(header);
-                display: block;
-                padding-bottom: 15px;
-                border-bottom: 2px solid #ddd;
-            }
-            
             .header-title {
                 font-size: 20px;
                 font-weight: bold;
                 margin-bottom: 20px;
                 color: #333;
-                position: relative;
+            	padding: 10px;
             }
             
             .header-logo {
@@ -108,23 +94,6 @@
                 border-bottom: 2px solid #ddd;
             }
             
-            .section-title {
-                font-size: 12px;
-                font-weight: bold;
-                margin: 20px 0 10px 0;
-                padding: 8px 10px;
-                background-color: #f0f0f0;
-                border-left: 4px solid #0070d2;
-                color: #0070d2;
-            }
-            
-            .record-count {
-                font-size: 10px;
-                color: #666;
-                margin-left: 10px;
-                font-weight: normal;
-            }
-            
             table {
                 width: 100%;
                 border-collapse: collapse;
@@ -169,13 +138,23 @@
             .text-right {
                 text-align: right;
             }
+            
+            .total-row {
+                font-weight: bold;
+                background-color: #f0f0f0 !important;
+            }
+            
+            .total-label {
+                text-align: right;
+                padding-right: 10px;
+            }
         </style>
     </head>
     
-    <body>
+    <body style="font-family:Arial,snas-serif; font-size: 9px;line-height: 1.4; color: #333;">
         <!-- Header -->
-        <div class="header">
-            <div class="header-title">
+        <div style="display: block; padding: 15px; border-bottom: 2px solid #ddd;">
+            <div style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #333; padding: 10px;">
                 Account Activity Statement
                 <div class="header-logo">
                     <span class="logo-aedon">Aedon</span><span class="logo-accounting">.Accounting</span>
@@ -245,8 +224,8 @@
                     <!-- Empty for spacing -->
                 </div>
                 <div class="header-column">
-                    <!-- <div class="header-label">VAT Number</div>
-                    <div class="header-value">{!accountDetails.VAT_Number__c}</div> -->
+                    <div class="header-label">VAT Number</div>
+                    <div class="header-value">{!accountDetails.Company__r.Company_Registration_Number__c}</div>
                 </div>
             </div>
         </div>
@@ -264,267 +243,175 @@
             </div>
         </apex:outputPanel>
         
-        <!-- Query Results Tables -->
-        <apex:repeat value="{!queryResults}" var="result">
-            <div class="content">
-                <div class="section-title">
-                    {!result.objectName}
-                    <span class="record-count">
-                        ({!result.records.size} record<apex:outputText value="{!IF(result.records.size != 1, 's', '')}" />)
-                    </span>
-                </div>
-                
-                <!-- Display table if records exist -->
-                <apex:outputPanel rendered="{!result.records.size > 0}">
-                    
-                    <!-- For Invoice__c Object -->
-                    <apex:outputPanel rendered="{!result.objectName == 'Invoice__c'}">
-                        <table>
-                            <thead>
+        <!-- Unified Transaction Table -->
+        <div class="content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice Date</th>
+                        <th>Number</th>
+                        <th>Type</th>
+                        <th>Reference</th>
+                        <th>Currency</th>
+                        <th>Status</th>
+                        <th class="text-right">Outstanding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Invoice Records -->
+                    <apex:variable var="totalOutstanding" value="{!0}" />
+                    <apex:repeat value="{!queryResults}" var="result">
+                        <apex:outputPanel rendered="{!result.objectName == 'Invoice__c'}">
+                            <apex:repeat value="{!result.records}" var="record">
                                 <tr>
-                                    <th>Transaction Number</th>
-                                    <th>Account</th>
-                                    <th>Invoice Date</th>
-                                    <th>Due Date</th>
-                                    <th>Currency</th>
-                                    <th>Gross Amount</th>
-                                    <th>Outstanding Amount</th>
-                                    <th>Customer Reference</th>
+                                    <td>
+                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                            <apex:param value="{!record['Invoice_Date__c']}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!record['Transaction_Number__c']}</td>
+                                    <td>SP</td>
+                                    <td>{!record['Customer_reference__c']}</td>
+                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
+                                    <td>{!record['Posting_Status__c']}</td>
+                                    <td class="text-right">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
+                                        </apex:outputText>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <apex:repeat value="{!result.records}" var="record">
-                                    <tr>
-                                        <td>{!record['Transaction_Number__c']}</td>
-                                        <td>{!record['Account__r']['Name']}</td>
-                                        <td>
-                                            <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                                <apex:param value="{!record['Invoice_Date__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>
-                                            <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                                <apex:param value="{!record['Due_On__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Gross_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Customer_reference__c']}</td>
-                                    </tr>
-                                </apex:repeat>
-                            </tbody>
-                        </table>
-                    </apex:outputPanel>
-                    
-                    <!-- For Payment__c Object -->
-                    <apex:outputPanel rendered="{!result.objectName == 'Payment__c'}">
-                        <table>
-                            <thead>
+                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
+                            </apex:repeat>
+                        </apex:outputPanel>
+                        
+                        <!-- Payment Records -->
+                        <apex:outputPanel rendered="{!result.objectName == 'Payment__c'}">
+                            <apex:repeat value="{!result.records}" var="record">
                                 <tr>
-                                    <th>Transaction Number</th>
-                                    <th>Account</th>
-                                    <th>Pay Date</th>
-                                    <th>Currency</th>
-                                    <th>Amount</th>
-                                    <th>Payment Reference</th>
+                                    <td>
+                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                            <apex:param value="{!record['Pay_Date__c']}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!record['Transaction_Number__c']}</td>
+                                    <td>Payment</td>
+                                    <td>{!record['Payment_Reference__c']}</td>
+                                    <td>{!record['Currency__r']['ISO_Code__c']}</td>
+                                    <td>{!record['Posting_Status__c']}</td>
+                                    <td class="text-right">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            <apex:param value="{!record['Amount__c']}"/>
+                                        </apex:outputText>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <apex:repeat value="{!result.records}" var="record">
-                                    <tr>
-                                        <td>{!record['Transaction_Number__c']}</td>
-                                        <td>{!record['Account__r']['Name']}</td>
-                                        <td>
-                                            <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                                <apex:param value="{!record['Pay_Date__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Currency__r']['ISO_Code__c']}</td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Payment_Reference__c']}</td>
-                                    </tr>
-                                </apex:repeat>
-                            </tbody>
-                        </table>
-                    </apex:outputPanel>
-                    
-                    <!-- For Credit_Note__c Object -->
-                    <apex:outputPanel rendered="{!result.objectName == 'Credit_Note__c'}">
-                        <table>
-                            <thead>
+                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Amount__c']}" />
+                            </apex:repeat>
+                        </apex:outputPanel>
+                        
+                        <!-- Credit Note Records -->
+                        <apex:outputPanel rendered="{!result.objectName == 'Credit_Note__c'}">
+                            <apex:repeat value="{!result.records}" var="record">
                                 <tr>
-                                    <th>Transaction Number</th>
-                                    <th>Account</th>
-                                    <th>Invoice Date</th>
-                                    <th>Currency</th>
-                                    <th>Gross Amount</th>
-                                    <th>Outstanding Amount</th>
-                                    <th>Customer Reference</th>
+                                    <td>
+                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                            <apex:param value="{!record['Invoice_Date__c']}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!record['Transaction_Number__c']}</td>
+                                    <td>Credit Note</td>
+                                    <td>{!record['Customer_reference__c']}</td>
+                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
+                                    <td>{!record['Posting_Status__c']}</td>
+                                    <td class="text-right">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
+                                        </apex:outputText>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <apex:repeat value="{!result.records}" var="record">
-                                    <tr>
-                                        <td>{!record['Transaction_Number__c']}</td>
-                                        <td>{!record['Account__r']['Name']}</td>
-                                        <td>
-                                            <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                                <apex:param value="{!record['Invoice_Date__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Gross_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Customer_reference__c']}</td>
-                                    </tr>
-                                </apex:repeat>
-                            </tbody>
-                        </table>
-                    </apex:outputPanel>
-                    
-                    <!-- For Journal__c Object (Journal Lines) -->
-                    <apex:outputPanel rendered="{!result.objectName == 'Journal__c'}">
-                        <table>
-                            <thead>
+                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
+                            </apex:repeat>
+                        </apex:outputPanel>
+                        
+                        <!-- Debit Note Records -->
+                        <apex:outputPanel rendered="{!result.objectName == 'Debit_Note__c'}">
+                            <apex:repeat value="{!result.records}" var="record">
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Account</th>
-                                    <th>Invoice Date</th>
-                                    <th>Transaction Number</th>
-                                    <th>Currency</th>
+                                    <td>
+                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                            <apex:param value="{!record['Invoice_Date__c']}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!record['Transaction_Number__c']}</td>
+                                    <td>Debit Note</td>
+                                    <td>{!record['Customer_reference__c']}</td>
+                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
+                                    <td>{!record['Posting_Status__c']}</td>
+                                    <td class="text-right">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
+                                        </apex:outputText>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <apex:repeat value="{!result.records}" var="record">
-                                    <tr>
-                                        <td>{!record['Name']}</td>
-                                        <td>{!record['Account__r']['Name']}</td>
-                                        <td>
-                                            <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                                <apex:param value="{!record['Journal__r']['Invoice_Date__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Journal__r']['Transaction_Number__c']}</td>
-                                        <td>{!record['Journal__r']['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                    </tr>
-                                </apex:repeat>
-                            </tbody>
-                        </table>
-                    </apex:outputPanel>
-                    
-                    <!-- For Receipts_Note__c Object -->
-                    <apex:outputPanel rendered="{!result.objectName == 'Receipts_Note__c'}">
-                        <table>
-                            <thead>
+                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
+                            </apex:repeat>
+                        </apex:outputPanel>
+                        
+                        <!-- Receipts Note Records -->
+                        <apex:outputPanel rendered="{!result.objectName == 'Receipts_Note__c'}">
+                            <apex:repeat value="{!result.records}" var="record">
                                 <tr>
-                                    <th>Transaction Number</th>
-                                    <th>To Account</th>
-                                    <th>Invoice Date</th>
-                                    <th>Currency</th>
-                                    <th>Gross Amount</th>
-                                    <th>Outstanding Amount</th>
+                                    <td>
+                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                            <apex:param value="{!record['Invoice_Date__c']}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!record['Transaction_Number__c']}</td>
+                                    <td>Receipt Note</td>
+                                    <td></td>
+                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
+                                    <td>{!record['Posting_Status__c']}</td>
+                                    <td class="text-right">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
+                                        </apex:outputText>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <apex:repeat value="{!result.records}" var="record">
-                                    <tr>
-                                        <td>{!record['Transaction_Number__c']}</td>
-                                        <td>{!record['To_Account__r']['Name']}</td>
-                                        <td>
-                                            <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                                <apex:param value="{!record['Invoice_Date__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Gross_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                    </tr>
-                                </apex:repeat>
-                            </tbody>
-                        </table>
-                    </apex:outputPanel>
-                    
-                    <!-- For Debit_Note__c Object -->
-                    <apex:outputPanel rendered="{!result.objectName == 'Debit_Note__c'}">
-                        <table>
-                            <thead>
+                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
+                            </apex:repeat>
+                        </apex:outputPanel>
+                        
+                        <!-- Journal Records -->
+                        <apex:outputPanel rendered="{!result.objectName == 'Journal__c'}">
+                            <apex:repeat value="{!result.records}" var="record">
                                 <tr>
-                                    <th>Transaction Number</th>
-                                    <th>Account</th>
-                                    <th>Invoice Date</th>
-                                    <th>Currency</th>
-                                    <th>Gross Amount</th>
-                                    <th>Outstanding Amount</th>
-                                    <th>Customer Reference</th>
+                                    <td>
+                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                            <apex:param value="{!record['Journal__r']['Invoice_Date__c']}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!record['Journal__r']['Transaction_Number__c']}</td>
+                                    <td>Journal</td>
+                                    <td>{!record['Name']}</td>
+                                    <td>{!record['Journal__r']['Transaction_Currency__r']['ISO_Code__c']}</td>
+                                    <!-- <td>{!record['Journal__r']['Posting_Status__c']}</td> -->
+                                    <td class="text-right">0.00</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <apex:repeat value="{!result.records}" var="record">
-                                    <tr>
-                                        <td>{!record['Transaction_Number__c']}</td>
-                                        <td>{!record['Account__r']['Name']}</td>
-                                        <td>
-                                            <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                                <apex:param value="{!record['Invoice_Date__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Gross_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td class="text-right">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                            </apex:outputText>
-                                        </td>
-                                        <td>{!record['Customer_reference__c']}</td>
-                                    </tr>
-                                </apex:repeat>
-                            </tbody>
-                        </table>
-                    </apex:outputPanel>
+                            </apex:repeat>
+                        </apex:outputPanel>
+                    </apex:repeat>
                     
-                </apex:outputPanel>
-                
-                <!-- Show message if no records -->
-                <apex:outputPanel rendered="{!result.records.size == 0}">
-                    <div class="no-data">
-                        No {!result.objectName} records found
-                    </div>
-                </apex:outputPanel>
-            </div>
-        </apex:repeat>
+                    <!-- Total Row -->
+                    <tr class="total-row">
+                        <td colspan="6" class="total-label">Total Outstanding:</td>
+                        <td class="text-right">
+                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                <apex:param value="{!totalOutstanding}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         
     </body>
 </apex:page>

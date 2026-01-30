@@ -49,7 +49,8 @@
                         	<div style="font-size: 25px; font-weight: bold; color: #000;">Account Activity Statement</div>
                         </td>
                         <td style="width: 50%; text-align: right;">
-                        	<div style="font-size: 25px; font-weight: bold; color: #000;">Aedon.Accounting</div>
+                        	<!-- <div style="font-size: 25px; font-weight: bold; color: #000;">Aedon.Accounting</div> -->
+                            <img src="{!Companylogo}" width="200"/>
                         </td>
                     </tr>
                 </table>
@@ -185,24 +186,22 @@
                     </apex:repeat>
                     
                     <!-- Total Row -->
-                    <!-- <apex:outputPanel rendered="{!transactionRecords.size > 0}"> -->
-                        <tr>
-                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
-                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
-                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
-                            <td style="text-align: center; font-size: 11px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold;">Total</td>
-                            <td style="text-align: right; font-size: 11px; padding: 10px 0px; color: #000; font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000;">
-                                <apex:outputText value="{0, number, ###,###,##0.00}">
-                                    <apex:param value="{!totalGrossAmount}"/>
-                                </apex:outputText>
-                            </td>
-                            <td style="text-align: right; font-size: 11px; padding: 10px 0px; color: #000; font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000;">
-                                <apex:outputText value="{0, number, ###,###,##0.00}">
-                                    <apex:param value="{!totalOutstandingAmount}"/>
-                                </apex:outputText>
-                            </td>
-                        </tr>
-                    <!-- </apex:outputPanel> -->
+                    <tr>
+                        <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
+                        <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
+                        <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
+                        <td style="text-align: center; font-size: 11px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold;">Total</td>
+                        <td style="text-align: right; font-size: 11px; padding: 10px 0px; color: #000; font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000;">
+                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                <apex:param value="{!totalGrossAmount}"/>
+                            </apex:outputText>
+                        </td>
+                        <td style="text-align: right; font-size: 11px; padding: 10px 0px; color: #000; font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000;">
+                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                <apex:param value="{!totalOutstandingAmount}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
                     
                     <apex:outputPanel rendered="{!transactionRecords.size == 0}">
                         <tr>

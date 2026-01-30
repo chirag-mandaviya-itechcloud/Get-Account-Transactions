@@ -6,6 +6,7 @@ public class GetAccountTransactionPDFController {
     public String txnType { get; set; }
     public String statusesParam { get; set; }
     public List<TransactionRecord> transactionRecords { get; set; }
+	public String companyLogo { get; set; }
 
 	public Account accountDetails { get; set; }
     public String statementDate { get; set; }
@@ -73,7 +74,7 @@ public class GetAccountTransactionPDFController {
 		// Fetch Account Details
         if (String.isNotBlank(whatId)) {
             try {
-                accountDetails = [SELECT Id, Name, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, AccountNumber, Currency__r.Name, Company__r.Name, Company__r.Address_Line1__c, Company__r.Address_Line2__c, Company__r.Company_Street__c, Company__r.Company_City__c, Company__r.Company_State__c, Company__r.Company_PostalCode__c, Company__r.Company_Country__c, Company__r.Company_Registration_Number__c FROM Account WHERE Id = :whatId LIMIT 1];
+                accountDetails = [SELECT Id, Name, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, AccountNumber, Currency__r.Name, Company__c, Company__r.Name, Company__r.Address_Line1__c, Company__r.Address_Line2__c, Company__r.Company_Street__c, Company__r.Company_City__c, Company__r.Company_State__c, Company__r.Company_PostalCode__c, Company__r.Company_Country__c, Company__r.Company_Registration_Number__c FROM Account WHERE Id = :whatId LIMIT 1];
             } catch (Exception e) {
                 System.debug('Error fetching account details: ' + e.getMessage());
             }
@@ -121,6 +122,43 @@ public class GetAccountTransactionPDFController {
             }
             // System.debug('Query Results: ' + queryResults);
         }
+
+		companyLogo = '/servlet/servlet.FileDownload?file=';
+
+		Id companyId = null;
+		if (accountDetails != null && accountDetails.Company__c != null) {
+			companyId = accountDetails.Company__c;
+		}
+
+		if (companyId != null) {
+			try {
+				List<ContentDocumentLink> imageList = [
+                    SELECT ContentDocumentId, ContentDocument.Title, ContentDocument.FileExtension, LinkedEntityId
+                    FROM ContentDocumentLink
+                    WHERE LinkedEntityId = :companyId
+                    AND ContentDocument.Title = 'companylogo'
+                    AND ContentDocument.FileExtension = 'png'
+                    WITH SECURITY_ENFORCED
+                ];
+
+				if (imageList.size() > 0) {
+					ContentVersion v = [
+                        SELECT Id, Title
+                        FROM ContentVersion
+                        WHERE ContentDocumentId = :imageList[0].ContentDocumentId
+                        WITH SECURITY_ENFORCED
+                        LIMIT 1
+                    ];
+
+					if (v != null) {
+                        companyLogo = '/sfc/servlet.shepherd/version/download/' + v.Id;
+                        System.debug('Company Logo URL: ' + companyLogo);
+                    }
+				}
+			} catch (Exception e) {
+                System.debug('Error fetching company logo: ' + e.getMessage());
+            }
+		}
     }
 
 	// Convert SObject to TransactionRecord wrapper

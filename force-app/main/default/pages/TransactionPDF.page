@@ -6,8 +6,8 @@
                 size: A4;
                 margin-left: 1cm;
                 margin-right: 1cm;
-                margin-top: 4cm;
-                margin-bottom: 2cm;
+                margin-top: 1cm;
+                margin-bottom: 1cm;
                 
                 @top-center { content: element(header); }
                 @bottom-center { content: element(footer); }
@@ -19,106 +19,8 @@
                 box-sizing: border-box;
             }
             
-            .header-title {
-                font-size: 20px;
-                font-weight: bold;
-                margin-bottom: 20px;
-                color: #333;
-            	padding: 10px;
-            }
-            
-            .header-logo {
-                position: absolute;
-                top: 0;
-                right: 0;
-                font-size: 18px;
-            }
-            
-            .logo-aedon {
-                color: #4ECDC4;
-            }
-            
-            .logo-accounting {
-                color: #FF6B6B;
-            }
-            
-            .header-content {
-                display: table;
-                width: 100%;
-                margin-top: 10px;
-            }
-            
-            .header-column {
-                display: table-cell;
-                vertical-align: top;
-                padding-right: 20px;
-                width: 33.33%;
-            }
-            
-            .header-label {
-                font-size: 9px;
-                font-weight: bold;
-                margin-bottom: 5px;
-                color: #333;
-            }
-            
-            .header-value {
-                font-size: 9px;
-                margin-bottom: 3px;
-                color: #666;
-            }
-            
-            .footer {
-                position: running(footer);
-                display: block;
-                text-align: center;
-                padding-top: 10px;
-                border-top: 1px solid #ddd;
-                font-size: 8px;
-                color: #666;
-            }
-            
             .page-number:before {
                 content: "Page " counter(page) " of " counter(pages);
-            }
-            
-            .content {
-                width: 100%;
-                margin-bottom: 20px;
-            }
-            
-            .template-section {
-                margin-top: 20px;
-                margin-bottom: 30px;
-                padding-bottom: 20px;
-                border-bottom: 2px solid #ddd;
-            }
-            
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 20px;
-                font-size: 8px;
-            }
-            
-            th {
-                background-color: #0070d2;
-                color: white;
-                font-weight: bold;
-                text-align: left;
-                padding: 6px 4px;
-                border: 1px solid #0070d2;
-                font-size: 8px;
-            }
-            
-            td {
-                padding: 5px 4px;
-                border: 1px solid #ddd;
-                word-wrap: break-word;
-            }
-            
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
             }
             
             .no-data {
@@ -134,283 +36,189 @@
             .page-break { 
                 page-break-after: always; 
             }
-            
-            .text-right {
-                text-align: right;
-            }
-            
-            .total-row {
-                font-weight: bold;
-                background-color: #f0f0f0 !important;
-            }
-            
-            .total-label {
-                text-align: right;
-                padding-right: 10px;
-            }
         </style>
     </head>
     
-    <body style="font-family:Arial,snas-serif; font-size: 9px;line-height: 1.4; color: #333;">
+    <body style="font-family:Arial, sans-serif; font-size: 12px; line-height: 1.4; color: #000;">
         <!-- Header -->
-        <div style="display: block; padding: 15px; border-bottom: 2px solid #ddd;">
-            <div style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #333; padding: 10px;">
-                Account Activity Statement
-                <div class="header-logo">
-                    <span class="logo-aedon">Aedon</span><span class="logo-accounting">.Accounting</span>
-                </div>
+        <div style="display: block; padding: 15px; border-bottom: 2px solid #000;">
+            <div style="margin-bottom: 20px;">
+                <table style="width: 100%; border: none; border-collapse: collapse; border-width: 0px">
+                    <tr>
+                        <td style="width: 50%;">
+                        	<div style="font-size: 25px; font-weight: bold; color: #000;">Account Activity Statement</div>
+                        </td>
+                        <td style="width: 50%; text-align: right;">
+                        	<div style="font-size: 25px; font-weight: bold; color: #000;">Aedon.Accounting</div>
+                        </td>
+                    </tr>
+                </table>
             </div>
             
-            <div class="header-content">
+            <div style="display: table; width: 100%; margin-top: 10px;">
                 <!-- Left Column - Customer Details -->
-                <div class="header-column">
-                    <div class="header-label">{!accountDetails.Name}</div>
+                <div style="display: table-cell; vertical-align: top; padding-right: 20px; width: 33.33%;">
+                    <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #000;">{!accountDetails.Name}</div>
                     <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.BillingStreet))}">
-                        <div class="header-value">{!accountDetails.BillingStreet}</div>
+                        <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.BillingStreet}</div>
                     </apex:outputPanel>
                     <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.BillingCity))}">
-                        <div class="header-value">{!accountDetails.BillingCity}</div>
+                        <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.BillingCity}</div>
                     </apex:outputPanel>
                     <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.BillingState))}">
-                        <div class="header-value">{!accountDetails.BillingState}</div>
+                        <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.BillingState}</div>
                     </apex:outputPanel>
                     <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.BillingPostalCode))}">
-                        <div class="header-value">{!accountDetails.BillingPostalCode}</div>
+                        <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.BillingPostalCode}</div>
                     </apex:outputPanel>
                     <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.BillingCountry))}">
-                        <div class="header-value">{!accountDetails.BillingCountry}</div>
+                        <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.BillingCountry}</div>
                     </apex:outputPanel>
                 </div>
                 
                 <!-- Middle Column - Statement Details -->
-                <div class="header-column">
-                    <div class="header-label">Statement Date</div>
-                    <div class="header-value">
+                <div style="display: table-cell; vertical-align: top; padding-right: 20px; width: 33.33%;">
+                    <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #000;">Statement Date</div>
+                    <div style="font-size: 11px; margin-bottom: 3px; color: #000;">
                         <apex:outputText value="{0,date,dd/MM/yyyy}">
                             <apex:param value="{!NOW()}"/>
                         </apex:outputText>
                     </div>
                     <br/>
-                    <div class="header-label">Sent Date</div>
-                    <div class="header-value">
+                    <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #000;">Sent Date</div>
+                    <div style="font-size: 11px; margin-bottom: 3px; color: #000;">
                         <apex:outputText value="{0,date,dd/MM/yyyy}">
                             <apex:param value="{!NOW()}"/>
                         </apex:outputText>
                     </div>
                     <br/>
-                    <div class="header-label">Currency</div>
-                    <div class="header-value">{!accountDetails.Currency__r.Name}</div>
+                    <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #000;">Currency</div>
+                    <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Currency__r.Name}</div>
                 </div>
                 
                 <!-- Right Column - Company Address -->
-                <div class="header-column">
-                    <div class="header-label">British Horizon</div>
-                    <div class="header-value">Suite 48</div>
-                    <div class="header-value">792 Wilmslow Road</div>
-                    <div class="header-value">Manchester</div>
-                    <div class="header-value">Greater Manchester</div>
-                    <div class="header-value">M20 6UG</div>
-                    <div class="header-value">UK</div>
+                <div style="display: table-cell; vertical-align: top; padding-right: 20px; width: 33.33%;">
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Name))}">
+                     	<div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #000;">{!accountDetails.Company__r.Name}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Address_Line1__c))}">
+                    	<div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Address_Line1__c}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Address_Line2__c))}">
+                    	<div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Address_Line2__c}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Company_Street__c))}">
+                    	<div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Company_Street__c}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Company_City__c))}">
+                    	<div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Company_City__c}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Company_State__c))}">
+                    	<div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Company_State__c}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Company_PostalCode__c))}">
+                    	<div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Company_PostalCode__c}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(accountDetails.Company__r.Company_Country__c))}">
+                    	<div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Company_Country__c}</div>
+                    </apex:outputPanel>
                 </div>
             </div>
             
-            <div class="header-content" style="margin-top: 10px;">
+            <div style="display: table; width: 100%; margin-top: 10px;">
                 <!-- Account Number and VAT Number -->
-                <div class="header-column">
-                    <div class="header-label">Account Number</div>
-                    <div class="header-value">{!accountDetails.AccountNumber}</div>
+                <div style="display: table-cell; vertical-align: top; padding-right: 20px; width: 33.33%;">
+                    <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #000;">Account Number</div>
+                    <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.AccountNumber}</div>
                 </div>
-                <div class="header-column">
+                <div style="display: table-cell; vertical-align: top; padding-right: 20px; width: 33.33%;">
                     <!-- Empty for spacing -->
                 </div>
-                <div class="header-column">
-                    <div class="header-label">VAT Number</div>
-                    <div class="header-value">{!accountDetails.Company__r.Company_Registration_Number__c}</div>
+                <div style="display: table-cell; vertical-align: top; padding-right: 20px; width: 33.33%;">
+                    <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #000;">VAT Number</div>
+                    <div style="font-size: 11px; margin-bottom: 3px; color: #000;">{!accountDetails.Company__r.Company_Registration_Number__c}</div>
                 </div>
             </div>
         </div>
         
-        <!-- Footer -->
-        <div class="footer">
-            <div class="page-number"></div>
-            <div>Generated on <apex:outputText value="{0,date,dd/MM/yyyy HH:mm}"><apex:param value="{!NOW()}"/></apex:outputText></div>
-        </div>
-        
-        <!-- Email Template Content (if any) -->
-        <apex:outputPanel rendered="{!NOT(ISBLANK(templateHtml))}">
-            <div class="content template-section">
-                <apex:outputText value="{!templateHtml}" escape="false"/>
-            </div>
-        </apex:outputPanel>
-        
-        <!-- Unified Transaction Table -->
-        <div class="content">
-            <table>
+        <div style="margin-top:10px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
-                        <th>Invoice Date</th>
-                        <th>Number</th>
-                        <th>Type</th>
-                        <th>Reference</th>
-                        <th>Currency</th>
-                        <th>Status</th>
-                        <th class="text-right">Outstanding</th>
+                	<tr>
+                    	<th style="width: 15%; text-align: center; font-size: 11px; padding-bottom: 8px; border-bottom: 2px solid #000;">Date</th>
+                        <th style="width: 18%; text-align: center; font-size: 11px; padding-bottom: 8px; border-bottom: 2px solid #000;">Invoice Number</th>
+                        <th style="width: 19%; text-align: center; font-size: 11px; padding-bottom: 8px; border-bottom: 2px solid #000;">Account</th>
+                        <th style="width: 15%; text-align: center; font-size: 11px; padding-bottom: 8px; border-bottom: 2px solid #000;">Currency</th>
+                        <th style="width: 15%; text-align: right; font-size: 11px; padding-bottom: 8px; border-bottom: 2px solid #000;">Gross</th>
+                        <th style="width: 18%; text-align: right; font-size: 11px; padding-bottom: 8px; border-bottom: 2px solid #000;">Outstanding</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Invoice Records -->
-                    <apex:variable var="totalOutstanding" value="{!0}" />
-                    <apex:repeat value="{!queryResults}" var="result">
-                        <apex:outputPanel rendered="{!result.objectName == 'Invoice__c'}">
-                            <apex:repeat value="{!result.records}" var="record">
-                                <tr>
-                                    <td>
-                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                            <apex:param value="{!record['Invoice_Date__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                    <td>{!record['Transaction_Number__c']}</td>
-                                    <td>SP</td>
-                                    <td>{!record['Customer_reference__c']}</td>
-                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                    <td>{!record['Posting_Status__c']}</td>
-                                    <td class="text-right">
-                                        <apex:outputText value="{0, number, ###,###,##0.00}">
-                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                </tr>
-                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
-                            </apex:repeat>
-                        </apex:outputPanel>
-                        
-                        <!-- Payment Records -->
-                        <apex:outputPanel rendered="{!result.objectName == 'Payment__c'}">
-                            <apex:repeat value="{!result.records}" var="record">
-                                <tr>
-                                    <td>
-                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                            <apex:param value="{!record['Pay_Date__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                    <td>{!record['Transaction_Number__c']}</td>
-                                    <td>Payment</td>
-                                    <td>{!record['Payment_Reference__c']}</td>
-                                    <td>{!record['Currency__r']['ISO_Code__c']}</td>
-                                    <td>{!record['Posting_Status__c']}</td>
-                                    <td class="text-right">
-                                        <apex:outputText value="{0, number, ###,###,##0.00}">
-                                            <apex:param value="{!record['Amount__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                </tr>
-                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Amount__c']}" />
-                            </apex:repeat>
-                        </apex:outputPanel>
-                        
-                        <!-- Credit Note Records -->
-                        <apex:outputPanel rendered="{!result.objectName == 'Credit_Note__c'}">
-                            <apex:repeat value="{!result.records}" var="record">
-                                <tr>
-                                    <td>
-                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                            <apex:param value="{!record['Invoice_Date__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                    <td>{!record['Transaction_Number__c']}</td>
-                                    <td>Credit Note</td>
-                                    <td>{!record['Customer_reference__c']}</td>
-                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                    <td>{!record['Posting_Status__c']}</td>
-                                    <td class="text-right">
-                                        <apex:outputText value="{0, number, ###,###,##0.00}">
-                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                </tr>
-                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
-                            </apex:repeat>
-                        </apex:outputPanel>
-                        
-                        <!-- Debit Note Records -->
-                        <apex:outputPanel rendered="{!result.objectName == 'Debit_Note__c'}">
-                            <apex:repeat value="{!result.records}" var="record">
-                                <tr>
-                                    <td>
-                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                            <apex:param value="{!record['Invoice_Date__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                    <td>{!record['Transaction_Number__c']}</td>
-                                    <td>Debit Note</td>
-                                    <td>{!record['Customer_reference__c']}</td>
-                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                    <td>{!record['Posting_Status__c']}</td>
-                                    <td class="text-right">
-                                        <apex:outputText value="{0, number, ###,###,##0.00}">
-                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                </tr>
-                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
-                            </apex:repeat>
-                        </apex:outputPanel>
-                        
-                        <!-- Receipts Note Records -->
-                        <apex:outputPanel rendered="{!result.objectName == 'Receipts_Note__c'}">
-                            <apex:repeat value="{!result.records}" var="record">
-                                <tr>
-                                    <td>
-                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                            <apex:param value="{!record['Invoice_Date__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                    <td>{!record['Transaction_Number__c']}</td>
-                                    <td>Receipt Note</td>
-                                    <td></td>
-                                    <td>{!record['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                    <td>{!record['Posting_Status__c']}</td>
-                                    <td class="text-right">
-                                        <apex:outputText value="{0, number, ###,###,##0.00}">
-                                            <apex:param value="{!record['Outstanding_Amount__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                </tr>
-                                <apex:variable var="totalOutstanding" value="{!totalOutstanding + record['Outstanding_Amount__c']}" />
-                            </apex:repeat>
-                        </apex:outputPanel>
-                        
-                        <!-- Journal Records -->
-                        <apex:outputPanel rendered="{!result.objectName == 'Journal__c'}">
-                            <apex:repeat value="{!result.records}" var="record">
-                                <tr>
-                                    <td>
-                                        <apex:outputText value="{0,date,dd/MM/yyyy}">
-                                            <apex:param value="{!record['Journal__r']['Invoice_Date__c']}"/>
-                                        </apex:outputText>
-                                    </td>
-                                    <td>{!record['Journal__r']['Transaction_Number__c']}</td>
-                                    <td>Journal</td>
-                                    <td>{!record['Name']}</td>
-                                    <td>{!record['Journal__r']['Transaction_Currency__r']['ISO_Code__c']}</td>
-                                    <!-- <td>{!record['Journal__r']['Posting_Status__c']}</td> -->
-                                    <td class="text-right">0.00</td>
-                                </tr>
-                            </apex:repeat>
-                        </apex:outputPanel>
+                    <apex:repeat value="{!transactionRecords}" var="txn">
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000;">
+                                {!txn.transactionDate}
+                            </td>
+                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000;">
+                                {!txn.invoiceNumber}
+                            </td>
+                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000;">
+                                {!txn.accountName}
+                            </td>
+                            <!-- <td style="text-align: center; font-size: 10px; padding: 6px; color: #000;">
+                                {!tr.reference}
+                            </td> -->
+                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000;">
+                                {!txn.currencyName}
+                            </td>
+                            <td style="text-align: right; font-size: 10px; color: #000;">
+                                <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!NOT(ISBLANK(txn.grossAmount))}">
+                                    <apex:param value="{!txn.grossAmount}"/>
+                                </apex:outputText>
+                            </td>
+                            <td style="text-align: right; font-size: 10px; color: #000;">
+                                <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!NOT(ISBLANK(txn.outstandingAmount))}">
+                                    <apex:param value="{!txn.outstandingAmount}"/>
+                                </apex:outputText>
+                            </td>
+                        </tr>
                     </apex:repeat>
                     
                     <!-- Total Row -->
-                    <tr class="total-row">
-                        <td colspan="6" class="total-label">Total Outstanding:</td>
-                        <td class="text-right">
-                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                <apex:param value="{!totalOutstanding}"/>
-                            </apex:outputText>
-                        </td>
-                    </tr>
+                    <!-- <apex:outputPanel rendered="{!transactionRecords.size > 0}"> -->
+                        <tr>
+                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
+                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
+                            <td style="text-align: center; font-size: 10px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000;"></td>
+                            <td style="text-align: center; font-size: 11px; padding: 6px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold;">Total</td>
+                            <td style="text-align: right; font-size: 11px; padding: 10px 0px; color: #000; font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000;">
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    <apex:param value="{!totalGrossAmount}"/>
+                                </apex:outputText>
+                            </td>
+                            <td style="text-align: right; font-size: 11px; padding: 10px 0px; color: #000; font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000;">
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    <apex:param value="{!totalOutstandingAmount}"/>
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    <!-- </apex:outputPanel> -->
+                    
+                    <apex:outputPanel rendered="{!transactionRecords.size == 0}">
+                        <tr>
+                            <td colspan="7" class="no-data">
+                                No transaction data available
+                            </td>
+                        </tr>
+                    </apex:outputPanel>
+
                 </tbody>
             </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="position: running(footer); display: block; text-align: center; padding-top: 10px; border-top: 1px solid #ddd; font-size: 9px; color: #666;">
+            <div class="page-number"></div>
         </div>
         
     </body>

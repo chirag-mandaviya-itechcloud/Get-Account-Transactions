@@ -5,15 +5,30 @@ public class GetAccountTransactionPDFController {
     public String toDate { get; set; }
     public String txnType { get; set; }
     public String statusesParam { get; set; }
-    public List<QueryResult> queryResults { get; set; }
+    public List<TransactionRecord> transactionRecords { get; set; }
 
 	public Account accountDetails { get; set; }
     public String statementDate { get; set; }
     public String sentDate { get; set; }
+	public Decimal totalGrossAmount { get; set; }
+    public Decimal totalOutstandingAmount { get; set; }
 
     public class QueryResult {
         public String objectName { get; set; }
         public List<SObject> records { get; set; }
+    }
+
+	public class TransactionRecord {
+        public String objectName { get; set; }
+        public String transactionDate { get; set; }
+        public String invoiceNumber { get; set; }
+        public String accountName { get; set; }
+        public String reference { get; set; }
+        public String currencyName { get; set; }
+        public Decimal grossAmount { get; set; }
+        public Decimal outstandingAmount { get; set; }
+        public String recordId { get; set; }
+        public String recordName { get; set; }
     }
 
     public GetAccountTransactionPDFController() {
@@ -29,6 +44,10 @@ public class GetAccountTransactionPDFController {
 		// Set statement date and sent date
         statementDate = String.valueOf(Date.today().format());
         sentDate = String.valueOf(Date.today().format());
+
+		// Initialize totals
+        totalGrossAmount = 0;
+        totalOutstandingAmount = 0;
 
 
         List<String> statuses = new List<String>();
@@ -49,7 +68,7 @@ public class GetAccountTransactionPDFController {
         System.debug('Transaction Type ---> '+ txnType);
         System.debug('Statuses ---> '+ statuses);
 
-        queryResults = new List<QueryResult>();
+        transactionRecords = new List<TransactionRecord>();
 
 		// Fetch Account Details
         if (String.isNotBlank(whatId)) {
@@ -77,20 +96,164 @@ public class GetAccountTransactionPDFController {
                 String fieldsName = 'Id, Name';
                 String query = buildDynamicQuery(fieldsName, objName, whatId, fromDate, toDate, statuses, txnType);
                 System.debug('Dynamic Query for ' + objName + ': ' + query);
-                List<SObject> records = Database.query(query);
-                QueryResult qr = new QueryResult();
-                qr.objectName = objName;
-                qr.records = records;
-                queryResults.add(qr);
+
+				try {
+					List<SObject> records = Database.query(query);
+
+					for (SObject record : records) {
+						TransactionRecord tr = convertToTransactionRecord(record, objName);
+						if (tr != null) {
+							transactionRecords.add(tr);
+
+							// Calculate totals
+							if (tr.grossAmount != null) {
+								totalGrossAmount += tr.grossAmount;
+							}
+							if (tr.outstandingAmount != null) {
+								totalOutstandingAmount += tr.outstandingAmount;
+							}
+						}
+					}
+
+				} catch (Exception e) {
+					System.debug('Error executing query for ' + objName + ': ' + e.getMessage());
+				}
             }
             // System.debug('Query Results: ' + queryResults);
         }
+    }
 
-        if (!objectNames.isEmpty()) {
-            for (QueryResult qr : queryResults) {
-                System.debug('Records for ' + qr.objectName + ': ' + qr.records);
+	// Convert SObject to TransactionRecord wrapper
+    private TransactionRecord convertToTransactionRecord(SObject record, String objectName) {
+        String nameSpace = getOrgNameSpace();
+        TransactionRecord tr = new TransactionRecord();
+
+        try {
+            tr.objectName = objectName;
+            tr.recordId = (String) record.get('Id');
+            tr.recordName = (String) record.get('Name');
+
+            // Handle Date fields
+            Date invoiceDate = (Date) getFieldValue(record, nameSpace + 'Invoice_Date__c');
+            Date payDate = (Date) getFieldValue(record, nameSpace + 'Pay_Date__c');
+
+            if (objectName == 'Journal_Lines__c') {
+                SObject journal = record.getSObject('Journal__r');
+                if (journal != null) {
+                    invoiceDate = (Date) journal.get(nameSpace + 'Invoice_Date__c');
+                }
             }
+
+            if (invoiceDate != null) {
+                tr.transactionDate = invoiceDate.format();
+            } else if (payDate != null) {
+                tr.transactionDate = payDate.format();
+            }
+
+            // Handle Invoice Number
+            tr.invoiceNumber = (String) getFieldValue(record, nameSpace + 'Transaction_Number__c');
+
+            if (objectName == 'Journal_Lines__c') {
+                SObject journal = record.getSObject('Journal__r');
+                if (journal != null) {
+                    tr.invoiceNumber = (String) journal.get(nameSpace + 'Transaction_Number__c');
+                }
+            }
+
+            // Handle Account Name - try different relationship names
+            tr.accountName = getAccountName(record, nameSpace);
+
+            // Handle Reference
+            tr.reference = (String) getFieldValue(record, nameSpace + 'Customer_reference__c');
+            if (String.isBlank(tr.reference)) {
+                tr.reference = (String) getFieldValue(record, nameSpace + 'Payment_Reference__c');
+            }
+
+            // Handle Currency
+            tr.currencyName = getCurrencyCode(record, objectName, nameSpace);
+
+            // Handle Amounts
+            tr.grossAmount = (Decimal) getFieldValue(record, nameSpace + 'Gross_Amount__c');
+            tr.outstandingAmount = (Decimal) getFieldValue(record, nameSpace + 'Outstanding_Amount__c');
+
+            if (tr.outstandingAmount == null) {
+                tr.outstandingAmount = (Decimal) getFieldValue(record, nameSpace + 'Amount__c');
+            }
+
+            return tr;
+        } catch (Exception e) {
+            System.debug('Error converting record: ' + e.getMessage());
+            return null;
         }
+    }
+
+    // Safe field value getter
+    private Object getFieldValue(SObject record, String fieldName) {
+        try {
+            Map<String, Object> populatedFields = record.getPopulatedFieldsAsMap();
+            if (populatedFields.containsKey(fieldName)) {
+                return record.get(fieldName);
+            }
+        } catch (Exception e) {
+            System.debug('Field ' + fieldName + ' not found: ' + e.getMessage());
+        }
+        return null;
+    }
+
+    // Get account name from different possible relationship fields
+    private String getAccountName(SObject record, String nameSpace) {
+        try {
+            // Try Account__r first
+            SObject accountRel = record.getSObject(nameSpace + 'Account__r');
+            if (accountRel != null) {
+                return (String) accountRel.get('Name');
+            }
+        } catch (Exception e) {
+            System.debug('Account__r not found: ' + e.getMessage());
+        }
+
+        try {
+            // Try To_Account__r
+            SObject toAccountRel = record.getSObject(nameSpace + 'To_Account__r');
+            if (toAccountRel != null) {
+                return (String) toAccountRel.get('Name');
+            }
+        } catch (Exception e) {
+            System.debug('To_Account__r not found: ' + e.getMessage());
+        }
+
+        return null;
+    }
+
+    // Get currency code
+    private String getCurrencyCode(SObject record, String objectName, String nameSpace) {
+        try {
+            if (objectName == 'Journal_Lines__c') {
+                SObject journal = record.getSObject('Journal__r');
+                if (journal != null) {
+                    SObject currencyObj = journal.getSObject(nameSpace + 'Transaction_Currency__r');
+                    if (currencyObj != null) {
+                        return (String) currencyObj.get('ISO_Code__c');
+                    }
+                }
+            }
+
+            // Try Transaction_Currency__r
+            SObject transCurrency = record.getSObject(nameSpace + 'Transaction_Currency__r');
+            if (transCurrency != null) {
+                return (String) transCurrency.get('ISO_Code__c');
+            }
+
+            // Try Currency__r
+            SObject currencyObj = record.getSObject(nameSpace + 'Currency__r');
+            if (currencyObj != null) {
+                return (String) currencyObj.get('ISO_Code__c');
+            }
+        } catch (Exception e) {
+            System.debug('Currency not found: ' + e.getMessage());
+        }
+
+        return null;
     }
 
     private static String buildDynamicQuery(String fieldsToQuery, String objectName, String accountId, Date fromDate, Date toDate, List<String> statuses, String txnType) {
